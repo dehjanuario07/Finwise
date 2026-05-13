@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-pt">
 <head>
@@ -65,9 +64,9 @@
         .type-toggle.active-income { background-color: #10b981; color: white; }
         .type-toggle.active-expense { background-color: #f43f5e; color: white; }
         
-        #deleteModal.active { display: flex; }
+        .modal.active { display: flex; }
         .transaction-pending { 
-            opacity: 0.8; 
+            opacity: 0.9; 
             border-left: 3px solid #f59e0b;
             background: rgba(245, 158, 11, 0.03);
         }
@@ -75,26 +74,68 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+        }
+        .animate-pulse-soft { animation: pulse-soft 2s infinite; }
     </style>
 </head>
 <body class="text-slate-200 min-h-screen p-4 lg:p-8">
 
     <!-- Modal de Eliminação -->
-    <div id="deleteModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md items-center justify-center p-4">
+    <div id="deleteModal" class="hidden modal fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-[2rem] p-6 max-w-sm w-full shadow-2xl">
             <h3 class="text-white font-extrabold text-lg text-center mb-6">Remover Lançamento?</h3>
             <div class="flex flex-col gap-3">
                 <button id="btnDeleteOne" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-all text-sm">Apenas este</button>
                 <button id="btnDeleteAll" class="hidden w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3.5 rounded-xl transition-all text-sm">Toda a sequência</button>
-                <button onclick="closeDeleteModal()" class="w-full text-slate-500 font-bold py-2 text-sm">Cancelar</button>
+                <button onclick="closeModal('deleteModal')" class="w-full text-slate-500 font-bold py-2 text-sm">Cancelar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de Atualizações (WhatsNew) -->
+    <div id="updateModal" class="hidden modal fixed inset-0 z-[60] bg-slate-950/95 backdrop-blur-xl items-center justify-center p-4">
+        <div class="bg-slate-900 border border-indigo-500/30 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-600/20 blur-3xl rounded-full"></div>
+            
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-900/40">
+                    <i class="fas fa-sparkles text-white"></i>
+                </div>
+                <div>
+                    <h3 class="text-white font-black text-xl leading-tight">Novidades no Finwise</h3>
+                    <p class="text-indigo-400 text-[10px] font-black uppercase tracking-widest">Versão 2.3 disponível</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 mb-8">
+                <div class="flex gap-4 p-3 rounded-2xl bg-slate-800/40 border border-white/5">
+                    <div class="text-rose-400 mt-1"><i class="fas fa-bell"></i></div>
+                    <div>
+                        <h4 class="text-xs font-bold text-white mb-1">Alertas de Vencimento</h4>
+                        <p class="text-[10px] text-slate-400 leading-relaxed">Agora você vê etiquetas de "Vence Hoje" e "Amanhã" direto na sua lista de lançamentos.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 p-3 rounded-2xl bg-slate-800/40 border border-white/5">
+                    <div class="text-amber-400 mt-1"><i class="fas fa-columns"></i></div>
+                    <div>
+                        <h4 class="text-xs font-bold text-white mb-1">Dash Inteligente</h4>
+                        <p class="text-[10px] text-slate-400 leading-relaxed">Os alertas também aparecem no resumo do dashboard para você nunca mais esquecer uma conta.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="acknowledgeUpdate()" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-indigo-950/50 uppercase text-[10px] tracking-widest">Entendido</button>
         </div>
     </div>
 
     <div class="max-w-7xl mx-auto">
         <!-- CABEÇALHO FINWISE -->
         <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 relative">
                 <svg width="52" height="52" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect width="40" height="40" rx="12" fill="url(#logoGrad)" />
                     <text x="20" y="30" font-family="'Plus Jakarta Sans', sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle">$</text>
@@ -106,9 +147,18 @@
                         </linearGradient>
                     </defs>
                 </svg>
-                <h1 class="text-3xl font-black tracking-tighter">
-                    <span class="bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">Finwise</span>
-                </h1>
+                <div>
+                    <h1 class="text-3xl font-black tracking-tighter">
+                        <span class="bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">Finwise</span>
+                    </h1>
+                    <div id="updateBadge" class="hidden flex items-center gap-1.5 mt-0.5" onclick="showUpdateModal()">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                        </span>
+                        <span class="text-[8px] font-black uppercase text-indigo-400 cursor-pointer hover:text-indigo-300">Nova atualização</span>
+                    </div>
+                </div>
             </div>
             
             <div class="flex flex-col items-center md:items-end gap-3 w-full md:w-auto">
@@ -272,12 +322,13 @@
             <div class="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-[10px] font-black uppercase tracking-widest text-slate-600">
                 <span>by Deh Januário</span>
                 <span class="hidden md:inline text-slate-800">|</span>
-                <span class="italic text-pink-500/70">Edition v2.2</span>
+                <span id="versionLabel" class="italic text-pink-500/70">v2.3</span>
             </div>
         </footer>
     </div>
 
     <script>
+        const CURRENT_VERSION = "2.3";
         let transactions = JSON.parse(localStorage.getItem('finwise_db')) || [];
         const filterMonth = document.getElementById('monthFilter');
         const amountInput = document.getElementById('amount');
@@ -299,6 +350,25 @@
         };
 
         const currencyConfig = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+
+        // Lógica de Versão / Notificação
+        function checkAppUpdate() {
+            const lastSeen = localStorage.getItem('finwise_version') || "0.0";
+            if (lastSeen !== CURRENT_VERSION) {
+                document.getElementById('updateBadge').classList.remove('hidden');
+                setTimeout(() => showUpdateModal(), 1500);
+            }
+            document.getElementById('versionLabel').innerText = `v${CURRENT_VERSION}`;
+        }
+
+        function showUpdateModal() { document.getElementById('updateModal').classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        
+        function acknowledgeUpdate() {
+            localStorage.setItem('finwise_version', CURRENT_VERSION);
+            document.getElementById('updateBadge').classList.add('hidden');
+            closeModal('updateModal');
+        }
 
         amountInput.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, "");
@@ -338,10 +408,9 @@
             transactionToDeleteId = id;
             document.getElementById('deleteModal').classList.add('active');
             document.getElementById('btnDeleteAll').classList.toggle('hidden', !t.groupId);
-            document.getElementById('btnDeleteOne').onclick = () => { transactions = transactions.filter(x => x.id !== transactionToDeleteId); closeDeleteModal(); save(); };
-            document.getElementById('btnDeleteAll').onclick = () => { transactions = transactions.filter(x => x.groupId !== t.groupId); closeDeleteModal(); save(); };
+            document.getElementById('btnDeleteOne').onclick = () => { transactions = transactions.filter(x => x.id !== transactionToDeleteId); closeModal('deleteModal'); save(); };
+            document.getElementById('btnDeleteAll').onclick = () => { transactions = transactions.filter(x => x.groupId !== t.groupId); closeModal('deleteModal'); save(); };
         }
-        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
 
         function renderDashboard() {
             const month = filterMonth.value; const filtered = transactions.filter(t => t.date.startsWith(month));
@@ -353,24 +422,41 @@
             document.getElementById('percOutcomesBadge').innerText = `${inc > 0 ? (exp/inc*100).toFixed(0) : 0}%`;
             document.getElementById('percBalanceBadge').innerText = `${inc > 0 ? (bal/inc*100).toFixed(0) : 0}% Livre`;
 
-            document.getElementById('latestActivity').innerHTML = [...filtered].sort((a,b) => b.id - a.id).slice(0, 10).map(t => `
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+
+            document.getElementById('latestActivity').innerHTML = [...filtered].sort((a,b) => b.id - a.id).slice(0, 10).map(t => {
+                let statusBadge = '';
+                if (!t.paid) {
+                    if (t.date === todayStr) {
+                        statusBadge = '<span class="bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded-lg text-[7px] font-black uppercase">Vence Hoje</span>';
+                    } else if (t.date === tomorrowStr) {
+                        statusBadge = '<span class="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-lg text-[7px] font-black uppercase">Amanhã</span>';
+                    }
+                }
+                
+                return `
                 <div class="flex justify-between items-center py-3 border-b border-slate-800/30 transition-all px-2 ${!t.paid ? 'transaction-pending' : ''}">
                     <div class="flex items-center gap-3">
                         <button onclick="togglePaid(${t.id})" class="w-6 h-6 rounded-lg border flex items-center justify-center ${t.paid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 text-slate-700'}">
                             <i class="fas ${t.paid ? 'fa-check text-[8px]' : 'fa-circle text-[3px]'}"></i>
                         </button>
                         <div class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-sm">${categoryMeta[t.category].icon}</div>
-                        <div><p class="font-bold text-[11px] text-slate-100 truncate max-w-[100px]">${t.description}</p></div>
+                        <div>
+                            <p class="font-bold text-[11px] text-slate-100 truncate max-w-[120px]">${t.description}</p>
+                            ${statusBadge ? `<div class="mt-1">${statusBadge}</div>` : ''}
+                        </div>
                     </div>
                     <p class="font-black text-[11px] ${categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">R$ ${t.amount.toLocaleString('pt-PT', currencyConfig)}</p>
-                </div>`).join('');
+                </div>`}).join('');
         }
 
         function renderLancamentos() {
             const m = filterMonth.value; 
             const filtered = transactions.filter(t => t.date.startsWith(m)).sort((a,b) => new Date(b.date) - new Date(a.date));
             
-            // Lógica de Datas para os novos badges
             const todayStr = new Date().toISOString().slice(0, 10);
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -458,6 +544,7 @@
             document.getElementById('dataEvento').value = new Date().toISOString().slice(0, 10); 
             setEntryType('expense'); 
             renderAll(); 
+            checkAppUpdate();
         };
         filterMonth.onchange = renderAll;
         document.getElementById('paymentOption').onchange = (e) => document.getElementById('parcelasDiv').classList.toggle('hidden', e.target.value !== 'parcelado');
