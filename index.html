@@ -107,23 +107,23 @@
                 </div>
                 <div>
                     <h3 class="text-white font-black text-xl leading-tight">Novidades no Finwise</h3>
-                    <p class="text-indigo-400 text-[10px] font-black uppercase tracking-widest">Versão 2.3 disponível</p>
+                    <p class="text-indigo-400 text-[10px] font-black uppercase tracking-widest">Versão 2.4 disponível</p>
                 </div>
             </div>
 
             <div class="space-y-4 mb-8">
                 <div class="flex gap-4 p-3 rounded-2xl bg-slate-800/40 border border-white/5">
-                    <div class="text-rose-400 mt-1"><i class="fas fa-bell"></i></div>
+                    <div class="text-indigo-400 mt-1"><i class="fas fa-calendar-day"></i></div>
                     <div>
-                        <h4 class="text-xs font-bold text-white mb-1">Alertas de Vencimento</h4>
-                        <p class="text-[10px] text-slate-400 leading-relaxed">Agora você vê etiquetas de "Vence Hoje" e "Amanhã" direto na sua lista de lançamentos.</p>
+                        <h4 class="text-xs font-bold text-white mb-1">Datas Visíveis</h4>
+                        <p class="text-[10px] text-slate-400 leading-relaxed">Agora a data de vencimento aparece em todos os lançamentos para melhor organização.</p>
                     </div>
                 </div>
                 <div class="flex gap-4 p-3 rounded-2xl bg-slate-800/40 border border-white/5">
-                    <div class="text-amber-400 mt-1"><i class="fas fa-columns"></i></div>
+                    <div class="text-rose-400 mt-1"><i class="fas fa-bell"></i></div>
                     <div>
-                        <h4 class="text-xs font-bold text-white mb-1">Dash Inteligente</h4>
-                        <p class="text-[10px] text-slate-400 leading-relaxed">Os alertas também aparecem no resumo do dashboard para você nunca mais esquecer uma conta.</p>
+                        <h4 class="text-xs font-bold text-white mb-1">Alertas de Vencimento</h4>
+                        <p class="text-[10px] text-slate-400 leading-relaxed">Etiquetas de "Vence Hoje" e "Amanhã" no Dashboard e na lista de Lançamentos.</p>
                     </div>
                 </div>
             </div>
@@ -269,6 +269,7 @@
                         <thead class="bg-slate-800/50 text-slate-500 text-[8px] font-black uppercase tracking-widest">
                             <tr>
                                 <th class="px-6 py-4 text-center">Status</th>
+                                <th class="px-6 py-4">Data</th>
                                 <th class="px-6 py-4">Descrição</th>
                                 <th class="px-6 py-4">Valor</th>
                                 <th class="px-6 py-4 text-center">Ação</th>
@@ -322,13 +323,13 @@
             <div class="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-[10px] font-black uppercase tracking-widest text-slate-600">
                 <span>by Deh Januário</span>
                 <span class="hidden md:inline text-slate-800">|</span>
-                <span id="versionLabel" class="italic text-pink-500/70">v2.3</span>
+                <span id="versionLabel" class="italic text-pink-500/70">v2.4</span>
             </div>
         </footer>
     </div>
 
     <script>
-        const CURRENT_VERSION = "2.3";
+        const CURRENT_VERSION = "2.4";
         let transactions = JSON.parse(localStorage.getItem('finwise_db')) || [];
         const filterMonth = document.getElementById('monthFilter');
         const amountInput = document.getElementById('amount');
@@ -350,6 +351,13 @@
         };
 
         const currencyConfig = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+
+        // Helper para formatar data (YYYY-MM-DD para DD/MM/AAAA)
+        function formatDate(dateStr) {
+            if(!dateStr) return "-";
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        }
 
         // Lógica de Versão / Notificação
         function checkAppUpdate() {
@@ -446,7 +454,10 @@
                         <div class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-sm">${categoryMeta[t.category].icon}</div>
                         <div>
                             <p class="font-bold text-[11px] text-slate-100 truncate max-w-[120px]">${t.description}</p>
-                            ${statusBadge ? `<div class="mt-1">${statusBadge}</div>` : ''}
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="text-[9px] font-bold text-slate-500 italic">${formatDate(t.date)}</span>
+                                ${statusBadge}
+                            </div>
                         </div>
                     </div>
                     <p class="font-black text-[11px] ${categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">R$ ${t.amount.toLocaleString('pt-PT', currencyConfig)}</p>
@@ -475,6 +486,7 @@
                 return `
                 <tr class="hover:bg-slate-800/20 ${!t.paid ? 'transaction-pending' : ''}">
                     <td class="px-6 py-4"><button onclick="togglePaid(${t.id})" class="mx-auto w-6 h-6 rounded-lg flex items-center justify-center border ${t.paid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 text-slate-700'}"><i class="fas ${t.paid ? 'fa-check text-[10px]' : 'fa-circle text-[4px]'}"></i></button></td>
+                    <td class="px-6 py-4 font-bold text-slate-500 text-[10px]">${formatDate(t.date)}</td>
                     <td class="px-6 py-4">
                         <div class="flex items-center">
                             <span class="font-bold text-slate-200">${t.description}</span>
