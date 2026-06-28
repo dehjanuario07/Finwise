@@ -284,6 +284,7 @@
 
         <section id="dashboardTab" class="tab-content active">
             <div class="bento-grid">
+                <!-- Total Balance Card - MOSTRA TODOS OS LANÇAMENTOS (saldo geral) -->
                 <div class="bento-item col-span-full lg:col-span-2 lg:row-span-2 border-l-4 border-l-indigo-500">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Saldo Geral</span>
@@ -302,10 +303,11 @@
                     </div>
                 </div>
 
+                <!-- Monthly Balance Card - MOSTRA TODOS OS LANÇAMENTOS DO MÊS (fixos, parcelados e únicos) -->
                 <div class="bento-item col-span-full lg:col-span-2 border-l-4 border-l-cyan-400">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Saldo Mensal</span>
-                        <span id="monthlyBalanceBadge" class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full text-[9px] font-extrabold">Este mês</span>
+                        <span id="monthlyBalanceBadge" class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full text-[9px] font-extrabold">Todos os lançamentos</span>
                     </div>
                     <div class="flex items-end gap-4">
                         <h3 id="monthlyBalance" class="text-2xl lg:text-3xl font-black text-cyan-400 tracking-tighter">R$ 0,00</h3>
@@ -317,11 +319,13 @@
                     </div>
                 </div>
 
+                <!-- Ganhos - MOSTRA TODOS OS LANÇAMENTOS DO MÊS -->
                 <div class="bento-item col-span-1 border-l-4 border-l-emerald-500">
                     <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-1">Ganhos</p>
                     <h3 id="totalIncomes" class="text-xl font-black text-emerald-400 truncate">R$ 0,00</h3>
                 </div>
 
+                <!-- Gastos - MOSTRA TODOS OS LANÇAMENTOS DO MÊS -->
                 <div class="bento-item col-span-1 border-l-4 border-l-rose-500">
                     <div class="flex justify-between items-center mb-1">
                         <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Gastos</p>
@@ -768,36 +772,58 @@
         };
 
         function renderDashboard() {
-            // All-time calculations
+            // ==================== SALDO GERAL ====================
+            // MOSTRA TODOS OS LANÇAMENTOS (únicos, fixos e parcelados)
             const allFiltered = transactions;
             let allInc = 0, allExp = 0;
-            allFiltered.forEach(t => { categoryMeta[t.category].type === 'income' ? allInc += t.amount : allExp += t.amount; });
+            allFiltered.forEach(t => { 
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') {
+                    allInc += t.amount;
+                } else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
+                    allExp += t.amount;
+                }
+            });
             const allBal = allInc - allExp;
             
-            document.getElementById('totalIncomes').innerHTML = formatCurrency(allInc);
-            document.getElementById('totalOutcomes').innerHTML = formatCurrency(allExp);
             document.getElementById('totalBalance').innerHTML = formatCurrency(allBal);
-            document.getElementById('percOutcomesBadge').textContent = `${allInc > 0 ? (allExp/allInc*100).toFixed(0) : 0}%`;
-            document.getElementById('percBalanceBadge').textContent = `${allInc > 0 ? (allBal/allInc*100).toFixed(0) : 0}% Livre`;
 
-            // Monthly calculations
+            // ==================== DASHBOARD MENSAL ====================
+            // MOSTRA TODOS OS LANÇAMENTOS DO MÊS (fixos, parcelados e únicos)
             const month = filterMonth.value;
             const monthlyFiltered = transactions.filter(t => t.date.startsWith(month));
+            
             let monthInc = 0, monthExp = 0;
-            monthlyFiltered.forEach(t => { categoryMeta[t.category].type === 'income' ? monthInc += t.amount : monthExp += t.amount; });
+            monthlyFiltered.forEach(t => { 
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') {
+                    monthInc += t.amount;
+                } else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
+                    monthExp += t.amount;
+                }
+            });
             const monthBal = monthInc - monthExp;
+            
+            document.getElementById('totalIncomes').innerHTML = formatCurrency(monthInc);
+            document.getElementById('totalOutcomes').innerHTML = formatCurrency(monthExp);
+            document.getElementById('percOutcomesBadge').textContent = `${monthInc > 0 ? (monthExp/monthInc*100).toFixed(0) : 0}%`;
+            document.getElementById('percBalanceBadge').textContent = `${monthInc > 0 ? (monthBal/monthInc*100).toFixed(0) : 0}% Livre`;
             
             document.getElementById('monthlyBalance').innerHTML = formatCurrency(monthBal);
             document.getElementById('monthlyIncome').innerHTML = formatCurrency(monthInc);
             document.getElementById('monthlyExpense').innerHTML = formatCurrency(monthExp);
             
-            // Trend calculation
+            // Trend calculation (compare com mês anterior - TODOS OS LANÇAMENTOS)
             const prevMonth = new Date(month);
             prevMonth.setMonth(prevMonth.getMonth() - 1);
             const prevKey = prevMonth.toISOString().slice(0, 7);
             const prevFiltered = transactions.filter(t => t.date.startsWith(prevKey));
             let prevInc = 0, prevExp = 0;
-            prevFiltered.forEach(t => { categoryMeta[t.category].type === 'income' ? prevInc += t.amount : prevExp += t.amount; });
+            prevFiltered.forEach(t => { 
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') {
+                    prevInc += t.amount;
+                } else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
+                    prevExp += t.amount;
+                }
+            });
             const prevBal = prevInc - prevExp;
             
             const trendEl = document.getElementById('monthlyBalanceTrend');
@@ -814,8 +840,8 @@
                 trendEl.className = `text-xs font-bold ${isPositive ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'} px-2 py-0.5 rounded-lg`;
             }
 
-            // Budget progress
-            const budgetPercent = Math.min((allExp / (allInc || 1)) * 100, 100);
+            // Budget progress (TODOS OS LANÇAMENTOS do mês)
+            const budgetPercent = Math.min((monthExp / (monthInc || 1)) * 100, 100);
             const progressBar = document.getElementById('budgetProgressBar');
             progressBar.style.width = `${budgetPercent}%`;
             document.getElementById('budgetProgressText').textContent = `${budgetPercent.toFixed(0)}%`;
@@ -823,17 +849,17 @@
             else if (budgetPercent > 70) progressBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
             else progressBar.style.background = 'linear-gradient(90deg, #6366f1, #ec4899)';
 
-            // Daily average
+            // Daily average (TODOS OS LANÇAMENTOS do mês)
             const days = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
             document.getElementById('avgDaily').textContent = formatCurrency(monthExp / days);
             
-            const largest = monthlyFiltered.filter(t => categoryMeta[t.category].type === 'expense').sort((a, b) => b.amount - a.amount)[0];
+            const largest = monthlyFiltered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').sort((a, b) => b.amount - a.amount)[0];
             document.getElementById('largestExpense').textContent = largest ? formatCurrency(largest.amount) : 'R$ 0,00';
 
             const todayStr = new Date().toISOString().slice(0, 10);
             const tomorrowStr = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().slice(0, 10);
 
-            // Latest activity
+            // Latest activity (TODOS OS LANÇAMENTOS do mês)
             document.getElementById('latestActivity').innerHTML = [...monthlyFiltered]
                 .sort((a,b) => b.id - a.id).slice(0, 10)
                 .map(t => {
@@ -842,6 +868,7 @@
                         if (t.date === todayStr) statusBadge = '<span class="bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded-lg text-[7px] font-black uppercase">Vence Hoje</span>';
                         else if (t.date === tomorrowStr) statusBadge = '<span class="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-lg text-[7px] font-black uppercase">Amanhã</span>';
                     }
+                    const isRecurring = t.groupId ? ' 🔁' : '';
                     return `
                     <div class="flex justify-between items-center py-3 border-b border-slate-800/30 transition-all px-2 ${!t.paid ? 'transaction-pending' : ''}">
                         <div class="flex items-center gap-3">
@@ -849,13 +876,13 @@
                                 <i class="fas ${t.paid ? 'fa-check text-[8px]' : 'fa-circle text-[3px]'}"></i>
                             </button>
                             <button onclick="editTransaction(${t.id})" class="text-slate-500 hover:text-indigo-400 transition-all"><i class="fas fa-pen text-[10px]"></i></button>
-                            <div class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-sm">${categoryMeta[t.category].icon}</div>
+                            <div class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-sm">${categoryMeta[t.category] ? categoryMeta[t.category].icon : '📌'}</div>
                             <div>
-                                <p class="font-bold text-[11px] text-slate-100 truncate max-w-[120px]">${t.description}</p>
+                                <p class="font-bold text-[11px] text-slate-100 truncate max-w-[120px]">${t.description}${isRecurring}</p>
                                 <div class="flex items-center gap-2 mt-0.5"><span class="text-[9px] font-bold text-slate-500 italic">${formatDate(t.date)}</span>${statusBadge}</div>
                             </div>
                         </div>
-                        <p class="font-black text-[11px] ${categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</p>
+                        <p class="font-black text-[11px] ${categoryMeta[t.category] && categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</p>
                     </div>`;
                 }).join('');
 
@@ -863,7 +890,7 @@
         }
 
         function renderAnalisesInsideDashboard(filtered) {
-            const expenses = filtered.filter(t => categoryMeta[t.category].type === 'expense');
+            const expenses = filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense');
             const totalExp = expenses.reduce((s, t) => s + t.amount, 0);
             const catData = {};
             expenses.forEach(t => catData[t.category] = (catData[t.category] || 0) + t.amount);
@@ -873,8 +900,8 @@
             charts.donut = new Chart(document.getElementById('categoryDonutChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(catData).map(k => categoryMeta[k].name),
-                    datasets: [{ data: Object.values(catData), backgroundColor: Object.keys(catData).map(k => categoryMeta[k].color), borderWidth: 0, cutout: '80%' }]
+                    labels: Object.keys(catData).map(k => categoryMeta[k] ? categoryMeta[k].name : k),
+                    datasets: [{ data: Object.values(catData), backgroundColor: Object.keys(catData).map(k => categoryMeta[k] ? categoryMeta[k].color : '#94a3b8'), borderWidth: 0, cutout: '80%' }]
                 },
                 options: { plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
             });
@@ -883,8 +910,8 @@
                 .map(([c, v]) => `
                     <div class="flex justify-between items-center text-xs font-bold mb-1.5">
                         <div class="flex items-center gap-2">
-                            <div class="w-2 h-2 rounded-full" style="background-color: ${categoryMeta[c].color}"></div>
-                            <span class="text-slate-300 text-[10px]">${categoryMeta[c].name}</span>
+                            <div class="w-2 h-2 rounded-full" style="background-color: ${categoryMeta[c] ? categoryMeta[c].color : '#94a3b8'}"></div>
+                            <span class="text-slate-300 text-[10px]">${categoryMeta[c] ? categoryMeta[c].name : c}</span>
                         </div>
                         <span class="text-slate-500 text-[10px]">${totalExp > 0 ? (v/totalExp*100).toFixed(0) : 0}%</span>
                     </div>
@@ -920,11 +947,11 @@
                     return `
                         <div>
                             <div class="flex justify-between text-[10px] font-black uppercase mb-1.5">
-                                <div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full" style="background-color: ${categoryMeta[c].color}"></div><span class="text-slate-300">${categoryMeta[c].name}</span></div>
+                                <div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full" style="background-color: ${categoryMeta[c] ? categoryMeta[c].color : '#94a3b8'}"></div><span class="text-slate-300">${categoryMeta[c] ? categoryMeta[c].name : c}</span></div>
                                 <div class="flex gap-3"><span class="text-slate-500">${p}%</span><span class="text-slate-100">${formatCurrency(v)}</span></div>
                             </div>
                             <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                <div class="h-full" style="width: ${p}%; background-color: ${categoryMeta[c].color}; opacity: 0.8"></div>
+                                <div class="h-full" style="width: ${p}%; background-color: ${categoryMeta[c] ? categoryMeta[c].color : '#94a3b8'}; opacity: 0.8"></div>
                             </div>
                         </div>
                     `;
@@ -939,7 +966,11 @@
             const dI = Array(days).fill(0), dE = Array(days).fill(0);
             filtered.forEach(t => {
                 const d = parseInt(t.date.split('-')[2]);
-                categoryMeta[t.category].type === 'income' ? dI[d-1] += t.amount : dE[d-1] += t.amount;
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') {
+                    dI[d-1] += t.amount;
+                } else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
+                    dE[d-1] += t.amount;
+                }
             });
             const aI = [], aE = [], aB = []; let sI = 0, sE = 0;
             for(let i=0; i<days; i++) { sI += dI[i]; sE += dE[i]; aI.push(sI); aE.push(sE); aB.push(sI - sE); }
@@ -977,12 +1008,13 @@
                     if (t.date === todayStr) statusBadge = '<span class="ml-2 bg-rose-500/20 text-rose-400 px-2 py-1 rounded-lg text-[8px] font-black uppercase">Vence Hoje</span>';
                     else if (t.date === tomorrowStr) statusBadge = '<span class="ml-2 bg-amber-500/20 text-amber-400 px-2 py-1 rounded-lg text-[8px] font-black uppercase">Amanhã</span>';
                 }
+                const isRecurring = t.groupId ? '🔁' : '';
                 return `
                 <tr class="hover:bg-slate-800/20 ${!t.paid ? 'transaction-pending' : ''}">
                     <td class="px-6 py-4"><button onclick="togglePaid(${t.id})" class="mx-auto w-6 h-6 rounded-lg flex items-center justify-center border ${t.paid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 text-slate-700'}"><i class="fas ${t.paid ? 'fa-check text-[10px]' : 'fa-circle text-[4px]'}"></i></button></td>
                     <td class="px-6 py-4 font-bold text-slate-500 text-[10px]">${formatDate(t.date)}</td>
-                    <td class="px-6 py-4"><div class="flex items-center"><span class="font-bold text-slate-200">${t.description}</span>${statusBadge}</div></td>
-                    <td class="px-6 py-4 font-black ${categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</td>
+                    <td class="px-6 py-4"><div class="flex items-center"><span class="font-bold text-slate-200">${t.description}</span> ${isRecurring}${statusBadge}</div></td>
+                    <td class="px-6 py-4 font-black ${categoryMeta[t.category] && categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center gap-6">
                             <button onclick="editTransaction(${t.id})" class="text-slate-600 hover:text-indigo-400 transition-all text-sm p-2"><i class="fas fa-pen"></i></button>
@@ -992,19 +1024,21 @@
                 </tr>`;
             }).join('');
 
-            document.getElementById('mobileTransactionList').innerHTML = filtered.map(t => `
+            document.getElementById('mobileTransactionList').innerHTML = filtered.map(t => {
+                const isRecurring = t.groupId ? '🔁' : '';
+                return `
                 <div class="mobile-card ${!t.paid ? 'transaction-pending' : ''}">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex items-center gap-2">
                             <button onclick="togglePaid(${t.id})" class="w-5 h-5 rounded-lg border flex items-center justify-center ${t.paid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 text-slate-700'}">
                                 <i class="fas ${t.paid ? 'fa-check text-[8px]' : 'fa-circle text-[3px]'}"></i>
                             </button>
-                            <span class="font-bold text-slate-200 text-sm">${t.description}</span>
+                            <span class="font-bold text-slate-200 text-sm">${t.description} ${isRecurring}</span>
                         </div>
-                        <span class="font-black ${categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</span>
+                        <span class="font-black ${categoryMeta[t.category] && categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</span>
                     </div>
                     <div class="flex justify-between items-center text-xs text-slate-500">
-                        <span>${categoryMeta[t.category].icon} ${categoryMeta[t.category].name}</span>
+                        <span>${categoryMeta[t.category] ? categoryMeta[t.category].icon : '📌'} ${categoryMeta[t.category] ? categoryMeta[t.category].name : 'Sem categoria'}</span>
                         <span>${formatDate(t.date)}</span>
                     </div>
                     <div class="flex justify-end gap-4 mt-3 pt-3 border-t border-slate-800/50">
@@ -1012,14 +1046,14 @@
                         <button onclick="deleteTransaction(${t.id})" class="bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-rose-500 text-xs px-4 py-2 rounded-lg transition-all font-bold flex items-center gap-1"><i class="fas fa-trash-can"></i> Excluir</button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function renderReports() {
             const month = filterMonth.value;
             const filtered = transactions.filter(t => t.date.startsWith(month));
-            const inc = filtered.filter(t => categoryMeta[t.category].type === 'income').reduce((s, t) => s + t.amount, 0);
-            const exp = filtered.filter(t => categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0);
+            const inc = filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'income').reduce((s, t) => s + t.amount, 0);
+            const exp = filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0);
             const total = filtered.length; const paid = filtered.filter(t => t.paid).length;
             
             document.getElementById('reportStats').innerHTML = `
@@ -1036,8 +1070,8 @@
                 const mData = transactions.filter(t => t.date.startsWith(key));
                 months.push(`${d.getMonth()+1}/${d.getFullYear().toString().slice(2)}`);
                 monthData.push({
-                    inc: mData.filter(t => categoryMeta[t.category].type === 'income').reduce((s, t) => s + t.amount, 0),
-                    exp: mData.filter(t => categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0)
+                    inc: mData.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'income').reduce((s, t) => s + t.amount, 0),
+                    exp: mData.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0)
                 });
             }
             
@@ -1062,150 +1096,156 @@
             });
         }
 
-        // ============================================================
-        // FUNÇÃO EXPORT PDF OTIMIZADA (baseada no seu código)
-        // ============================================================
         function exportPDF() {
-            showToast('Gerando PDF...', 'info');
-            
-            // 1. Pega os dados conforme o mês selecionado
-            const month = document.getElementById('monthFilter').value;
-            const filtered = transactions.filter(t => t.date.startsWith(month)).sort((a,b) => new Date(a.date) - new Date(b.date));
-            
-            let inc = 0, exp = 0;
-            filtered.forEach(t => categoryMeta[t.category].type === 'income' ? inc += t.amount : exp += t.amount);
-            const saldo = inc - exp;
+            const exportBtn = document.querySelector('.report-card button');
+            const originalText = exportBtn.innerHTML;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+            exportBtn.disabled = true;
 
-            // 2. Cria o elemento do PDF isolado do restante do CSS do App
-            const element = document.createElement('div');
-            element.style.padding = '40px';
-            element.style.backgroundColor = '#ffffff';
-            element.style.color = '#000000';
-            element.style.width = '750px'; // Largura fixa para garantir estabilidade
-            element.style.fontFamily = 'Arial, sans-serif';
+            setTimeout(() => {
+                try {
+                    const month = filterMonth.value;
+                    const filtered = transactions.filter(t => t.date.startsWith(month)).sort((a,b) => new Date(a.date) - new Date(b.date));
+                    let inc = 0, exp = 0;
+                    filtered.forEach(t => { 
+                        if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') {
+                            inc += t.amount;
+                        } else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
+                            exp += t.amount;
+                        }
+                    });
 
-            // 3. Monta o HTML simples com melhorias
-            let tableRows = filtered.map(t => `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 12px 8px; font-size: 12px;">${formatDate(t.date)}</td>
-                    <td style="padding: 12px 8px; font-size: 12px;">${t.description}</td>
-                    <td style="padding: 12px 8px; font-size: 12px;">${categoryMeta[t.category].name}</td>
-                    <td style="padding: 12px 8px; font-size: 12px; text-align: right; font-weight: ${categoryMeta[t.category].type === 'income' ? 'bold' : 'bold'}; color: ${categoryMeta[t.category].type === 'income' ? '#10b981' : '#f43f5e'};">${formatCurrency(t.amount)}</td>
-                </tr>`).join('');
+                    const element = document.createElement('div');
+                    element.style.padding = '40px';
+                    element.style.fontFamily = "'Helvetica Neue', Arial, sans-serif";
+                    element.style.color = '#1f2937';
+                    element.style.backgroundColor = '#ffffff';
+                    element.style.maxWidth = '800px';
+                    element.style.margin = '0 auto';
 
-            // Agrupar por categoria para mostrar resumo
-            const catSummary = {};
-            filtered.forEach(t => {
-                const cat = t.category;
-                if (!catSummary[cat]) catSummary[cat] = 0;
-                catSummary[cat] += t.amount;
-            });
+                    const [year, monthNum] = month.split('-');
+                    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                    const monthName = monthNames[parseInt(monthNum) - 1];
 
-            let catRows = Object.entries(catSummary)
-                .filter(([_, v]) => v > 0)
-                .sort((a,b) => b[1] - a[1])
-                .map(([cat, total]) => `
-                    <tr style="border-bottom: 1px solid #f0f0f0;">
-                        <td style="padding: 8px 8px; font-size: 11px;">${categoryMeta[cat].name}</td>
-                        <td style="padding: 8px 8px; font-size: 11px; text-align: right; font-weight: bold;">${formatCurrency(total)}</td>
-                    </tr>
-                `).join('');
+                    let tableRows = filtered.map(t => {
+                        const color = (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') ? '#10b981' : '#f43f5e';
+                        const categoryName = categoryMeta[t.category] ? categoryMeta[t.category].name : 'Sem categoria';
+                        const icon = categoryMeta[t.category] ? categoryMeta[t.category].icon : '📌';
+                        const isRecurring = t.groupId ? ' 🔁' : '';
+                        return `
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 12px 8px; font-size: 12px; color: #6b7280;">${formatDate(t.date)}</td>
+                            <td style="padding: 12px 8px; font-size: 12px; font-weight: 600; color: #1f2937;">${t.description}${isRecurring}</td>
+                            <td style="padding: 12px 8px; font-size: 12px; color: #6b7280;">${icon} ${categoryName}</td>
+                            <td style="padding: 12px 8px; font-size: 12px; color: ${t.paid ? '#10b981' : '#f59e0b'}; font-weight: 600;">${t.paid ? '✅ Pago' : '⏳ Pendente'}</td>
+                            <td style="padding: 12px 8px; font-size: 13px; font-weight: 700; color: ${color}; text-align: right;">${formatCurrency(t.amount)}</td>
+                        </tr>`;
+                    }).join('');
 
-            element.innerHTML = `
-                <!-- Header -->
-                <div style="border-bottom: 3px solid #4f46e5; padding-bottom: 20px; margin-bottom: 25px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h1 style="color: #4f46e5; margin: 0; font-size: 26px; font-weight: bold;">Finwise</h1>
-                        <p style="color: #666; margin: 0; font-size: 14px;">Relatório Mensal</p>
-                    </div>
-                    <p style="color: #888; margin: 5px 0 0 0; font-size: 13px;">Período: ${month.replace('-', ' / ')}</p>
-                </div>
+                    const saldo = inc - exp;
+                    const saldoColor = saldo >= 0 ? '#10b981' : '#f43f5e';
 
-                <!-- Resumo -->
-                <div style="display: flex; gap: 20px; margin-bottom: 30px;">
-                    <div style="flex: 1; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f8fafc;">
-                        <div style="font-size: 11px; color: #666; text-transform: uppercase; font-weight: bold;">Receitas</div>
-                        <div style="font-size: 22px; color: #10b981; font-weight: bold; margin-top: 5px;">${formatCurrency(inc)}</div>
-                    </div>
-                    <div style="flex: 1; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f8fafc;">
-                        <div style="font-size: 11px; color: #666; text-transform: uppercase; font-weight: bold;">Despesas</div>
-                        <div style="font-size: 22px; color: #f43f5e; font-weight: bold; margin-top: 5px;">${formatCurrency(exp)}</div>
-                    </div>
-                    <div style="flex: 1; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; background: ${saldo >= 0 ? '#f0fdf4' : '#fef2f2'};">
-                        <div style="font-size: 11px; color: #666; text-transform: uppercase; font-weight: bold;">Saldo</div>
-                        <div style="font-size: 22px; color: ${saldo >= 0 ? '#10b981' : '#f43f5e'}; font-weight: bold; margin-top: 5px;">${formatCurrency(saldo)}</div>
-                    </div>
-                </div>
+                    element.innerHTML = `
+                        <div style="text-align: center; border-bottom: 3px solid #6366f1; padding-bottom: 25px; margin-bottom: 30px;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px;">
+                                <div style="background: linear-gradient(135deg, #6366f1, #ec4899); color: white; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900;">$</div>
+                                <h1 style="color: #6366f1; margin: 0; font-size: 32px; font-weight: 800;">Finwise</h1>
+                            </div>
+                            <h2 style="color: #4b5563; margin: 8px 0 0 0; font-size: 20px; font-weight: 600;">Relatório Financeiro</h2>
+                            <p style="color: #9ca3af; margin: 4px 0 0 0; font-size: 14px; font-weight: 500;">${monthName} de ${year}</p>
+                            <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 11px; font-weight: 400;">${filtered.filter(t => t.groupId).length} lançamentos recorrentes</p>
+                        </div>
 
-                <!-- Resumo por Categoria -->
-                ${catRows ? `
-                <div style="margin-bottom: 25px;">
-                    <h3 style="color: #334155; margin: 0 0 12px 0; font-size: 14px;">Resumo por Categoria</h3>
-                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
-                        <thead>
-                            <tr style="background: #f1f5f9; text-align: left;">
-                                <th style="padding: 8px 12px; font-size: 11px; color: #475569;">Categoria</th>
-                                <th style="padding: 8px 12px; font-size: 11px; color: #475569; text-align: right;">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>${catRows}</tbody>
-                    </table>
-                </div>
-                ` : ''}
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 35px;">
+                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                                <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px;">💰 Receitas</div>
+                                <div style="font-size: 20px; color: #10b981; font-weight: 800;">${formatCurrency(inc)}</div>
+                            </div>
+                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                                <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px;">💳 Despesas</div>
+                                <div style="font-size: 20px; color: #f43f5e; font-weight: 800;">${formatCurrency(exp)}</div>
+                            </div>
+                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                                <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px;">📊 Saldo</div>
+                                <div style="font-size: 20px; color: ${saldoColor}; font-weight: 800;">${formatCurrency(saldo)}</div>
+                            </div>
+                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                                <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px;">📋 Lançamentos</div>
+                                <div style="font-size: 20px; color: #6366f1; font-weight: 800;">${filtered.length}</div>
+                            </div>
+                        </div>
 
-                <!-- Detalhamento -->
-                <h3 style="color: #334155; margin: 0 0 12px 0; font-size: 14px;">Detalhamento de Lançamentos</h3>
-                ${filtered.length > 0 ? `
-                <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
-                    <thead>
-                        <tr style="background: #f1f5f9; text-align: left;">
-                            <th style="padding: 12px 8px; font-size: 11px; color: #475569; text-transform: uppercase;">Data</th>
-                            <th style="padding: 12px 8px; font-size: 11px; color: #475569; text-transform: uppercase;">Descrição</th>
-                            <th style="padding: 12px 8px; font-size: 11px; color: #475569; text-transform: uppercase;">Categoria</th>
-                            <th style="padding: 12px 8px; font-size: 11px; color: #475569; text-transform: uppercase; text-align: right;">Valor</th>
-                        </tr>
-                    </thead>
-                    <tbody>${tableRows}</tbody>
-                </table>
-                ` : `
-                <div style="padding: 30px; text-align: center; border: 1px dashed #ccc; border-radius: 8px; color: #94a3b8;">
-                    Nenhum lançamento encontrado para este período.
-                </div>
-                `}
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h3 style="color: #1f2937; margin: 0; font-size: 16px; font-weight: 700;">📋 Detalhamento de Lançamentos</h3>
+                                <span style="font-size: 12px; color: #9ca3af; font-weight: 500;">${filtered.length} transações</span>
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                                <thead>
+                                    <tr style="background: #f1f5f9; border-bottom: 2px solid #e5e7eb;">
+                                        <th style="padding: 12px 8px; font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Data</th>
+                                        <th style="padding: 12px 8px; font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Descrição</th>
+                                        <th style="padding: 12px 8px; font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Categoria</th>
+                                        <th style="padding: 12px 8px; font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Status</th>
+                                        <th style="padding: 12px 8px; font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; text-align: right;">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows.length > 0 ? tableRows : '<tr><td colspan="5" style="text-align:center; padding: 30px; color: #9ca3af; font-size: 14px;">Nenhum lançamento encontrado para este período.</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
 
-                <!-- Footer -->
-                <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #94a3b8; text-align: center;">
-                    Documento gerado automaticamente pelo Finwise App<br>
-                    Total de registros: ${filtered.length} | ${new Date().toLocaleDateString('pt-PT')}
-                </div>
-            `;
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="font-size: 12px; color: #9ca3af; font-weight: 500;">
+                                <span style="font-weight: 600;">Resumo:</span> 
+                                ${filtered.filter(t => t.paid).length} pagos, 
+                                ${filtered.filter(t => !t.paid).length} pendentes
+                                ${filtered.filter(t => t.groupId).length > 0 ? `, ${filtered.filter(t => t.groupId).length} recorrentes` : ''}
+                            </div>
+                            <div style="font-size: 11px; color: #9ca3af; text-align: right;">
+                                <div>Gerado em ${new Date().toLocaleDateString('pt-PT')} às ${new Date().toLocaleTimeString('pt-PT', {hour: '2-digit', minute: '2-digit'})}</div>
+                                <div style="font-weight: 600; color: #6366f1; margin-top: 4px;">Finwise v${CURRENT_VERSION}</div>
+                            </div>
+                        </div>
+                    `;
 
-            // 4. Configuração final (useCORS: true é essencial)
-            const opt = {
-                margin: 10,
-                filename: `Relatorio_${month}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    logging: false
-                },
-                jsPDF: { 
-                    unit: 'mm', 
-                    format: 'a4', 
-                    orientation: 'portrait' 
-                }
-            };
+                    const opt = {
+                        margin: [15, 15, 15, 15],
+                        filename: `finwise_${month}.pdf`,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { 
+                            scale: 2,
+                            useCORS: true,
+                            logging: false
+                        },
+                        jsPDF: { 
+                            unit: 'mm', 
+                            format: 'a4', 
+                            orientation: 'portrait' 
+                        }
+                    };
 
-            // 5. Dispara a exportação
-            html2pdf().set(opt).from(element).save()
-                .then(() => {
-                    showToast('Relatório gerado com sucesso!', 'success');
-                })
-                .catch(err => {
-                    console.error('Erro ao gerar PDF:', err);
+                    html2pdf().set(opt).from(element).save()
+                        .then(() => {
+                            showToast('📄 Relatório gerado com sucesso!', 'success');
+                            exportBtn.innerHTML = originalText;
+                            exportBtn.disabled = false;
+                        })
+                        .catch(err => {
+                            console.error('Erro no PDF:', err);
+                            showToast('Erro ao gerar PDF. Tente novamente.', 'error');
+                            exportBtn.innerHTML = originalText;
+                            exportBtn.disabled = false;
+                        });
+
+                } catch (error) {
+                    console.error('Erro na exportação:', error);
                     showToast('Erro ao gerar PDF. Tente novamente.', 'error');
-                });
+                    exportBtn.innerHTML = originalText;
+                    exportBtn.disabled = false;
+                }
+            }, 300);
         }
 
         function showTab(tab) {
