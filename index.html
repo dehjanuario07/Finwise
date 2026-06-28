@@ -6,7 +6,7 @@
     <title>Finwise - Intelligent Finance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- BIBLIOTECAS ATUALIZADAS PARA PDF -->
+    <!-- BIBLIOTECAS PARA PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -1101,7 +1101,7 @@
         }
 
         // ════════════════════════════════════════════════════════════
-        //  NOVA FUNÇÃO exportPDF() COM jsPDF + autoTable
+        //  FUNÇÃO exportPDF() CORRIGIDA - SEM ACENTOS/Ç E ÚLTIMA LINHA AJUSTADA
         // ════════════════════════════════════════════════════════════
         async function exportPDF() {
             const exportBtn = document.querySelector('.report-card button');
@@ -1125,38 +1125,54 @@
                 const saldo = inc - exp;
 
                 const [year, monthNum] = month.split('-');
-                const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                const monthNames = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
                 const monthName = monthNames[parseInt(monthNum) - 1];
 
                 // Inicializar jsPDF
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
 
-                // Cabeçalho Oficial (Inspirado no app Check)
+                // Cabeçalho Oficial
                 doc.setFont("helvetica", "bold"); 
                 doc.setFontSize(22); 
-                doc.setTextColor(99, 102, 241); // Indigo do Finwise
+                doc.setTextColor(99, 102, 241);
                 doc.text("FINWISE", 20, 20);
 
                 doc.setFontSize(10); 
                 doc.setTextColor(100, 100, 100);
-                doc.text(`Relatório Financeiro Premium v3.0 • Gerado em ${new Date().toLocaleDateString('pt-PT')}`, 20, 28);
+                doc.text(`Relatorio Financeiro Premium v3.0 • Gerado em ${new Date().toLocaleDateString('pt-PT')}`, 20, 28);
                 doc.line(20, 32, 190, 32);
 
                 doc.setFontSize(11); 
                 doc.setTextColor(0, 0, 0);
-                doc.text(`Período: ${monthName} de ${year}`, 20, 42);
+                doc.text(`Periodo: ${monthName} de ${year}`, 20, 42);
                 doc.text(`Receitas: R$ ${inc.toLocaleString('pt-PT', currencyConfig)} | Despesas: R$ ${exp.toLocaleString('pt-PT', currencyConfig)}`, 110, 42);
 
-                // Estruturar dados para a tabela
+                // Estruturar dados para a tabela - REMOVENDO ACENTOS E Ç
                 const tableBody = filtered.map(t => {
-                    const categoryName = categoryMeta[t.category] ? categoryMeta[t.category].name : 'Sem categoria';
+                    // Remove acentos e caracteres especiais
+                    const descClean = t.description
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/ç/g, 'c')
+                        .replace(/Ç/g, 'C');
+                    
+                    const categoryName = categoryMeta[t.category] 
+                        ? categoryMeta[t.category].name
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .replace(/ç/g, 'c')
+                            .replace(/Ç/g, 'C')
+                        : 'Sem categoria';
+                    
                     const isRecurring = t.groupId ? ' (Recorrente)' : '';
+                    const statusText = t.paid ? 'Pago' : 'Pendente';
+                    
                     return [
                         formatDate(t.date),
-                        t.description + isRecurring,
+                        descClean + isRecurring,
                         categoryName,
-                        t.paid ? 'Pago' : 'Pendente',
+                        statusText,
                         `R$ ${t.amount.toLocaleString('pt-PT', currencyConfig)}`
                     ];
                 });
@@ -1164,33 +1180,58 @@
                 // Configurar a tabela AutoTable
                 doc.autoTable({
                     startY: 48,
-                    head: [['Data', 'Descrição', 'Categoria', 'Status', 'Valor']],
+                    head: [['Data', 'Descricao', 'Categoria', 'Status', 'Valor']],
                     body: tableBody,
                     theme: 'grid',
-                    headStyles: { fillColor: [99, 102, 241], halign: 'center', textColor: 255 }, // Indigo Finwise
-                    styles: { fontSize: 9, halign: 'center' },
+                    headStyles: { 
+                        fillColor: [99, 102, 241], 
+                        halign: 'center', 
+                        textColor: 255,
+                        fontStyle: 'bold'
+                    },
+                    styles: { 
+                        fontSize: 9, 
+                        halign: 'center',
+                        cellPadding: 3
+                    },
                     columnStyles: { 
                         1: { halign: 'left' } 
                     },
                     foot: [
-                        [ 
-                            { content: 'SALDO FINAL DO PERÍODO (R$)', colSpan: 4, styles: { halign: 'right', fontStyle: 'bold' } }, 
-                            `R$ ${saldo.toLocaleString('pt-PT', currencyConfig)}` 
+                        [
+                            { 
+                                content: 'SALDO FINAL DO PERIODO', 
+                                colSpan: 4, 
+                                styles: { 
+                                    halign: 'right', 
+                                    fontStyle: 'bold',
+                                    fontSize: 10,
+                                    fillColor: [240, 240, 240]
+                                } 
+                            }, 
+                            { 
+                                content: `R$ ${saldo.toLocaleString('pt-PT', currencyConfig)}`,
+                                styles: { 
+                                    halign: 'center',
+                                    fontStyle: 'bold',
+                                    fontSize: 10,
+                                    textColor: saldo >= 0 ? [16, 185, 129] : [244, 63, 94],
+                                    fillColor: [240, 240, 240]
+                                }
+                            }
                         ]
                     ],
-                    // Cor verde para saldo positivo e vermelho para negativo
                     footStyles: { 
-                        fillColor: [240, 240, 240], 
-                        textColor: saldo >= 0 ? [16, 185, 129] : [244, 63, 94], 
-                        lineWidth: 0.1 
+                        fillColor: [240, 240, 240],
+                        lineWidth: 0.1
                     }
                 });
 
                 doc.save(`Finwise_Relatorio_${monthName}_${year}.pdf`);
-                showToast("📄 PDF Exportado com sucesso!", "success");
+                showToast("PDF Exportado com sucesso!", "success");
 
             } catch (error) {
-                console.error('Erro na exportação:', error);
+                console.error('Erro na exportacao:', error);
                 showToast('Erro ao gerar PDF. Tente novamente.', 'error');
             } finally {
                 exportBtn.innerHTML = originalText;
