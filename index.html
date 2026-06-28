@@ -6,7 +6,9 @@
     <title>Finwise - Intelligent Finance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- BIBLIOTECAS ATUALIZADAS PARA PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
@@ -441,7 +443,8 @@
             </div>
 
             <div class="bg-slate-900/30 rounded-[2rem] border border-slate-800 overflow-hidden">
-                <div class="overflow-x-auto hidden md:block"> <table class="w-full text-left">
+                <div class="overflow-x-auto hidden md:block">
+                    <table class="w-full text-left">
                         <thead class="bg-slate-800/50 text-slate-500 text-[8px] font-black uppercase tracking-widest">
                             <tr>
                                 <th class="px-6 py-4 text-center">Status</th>
@@ -454,7 +457,8 @@
                         <tbody id="transactionList" class="divide-y divide-slate-800/50 text-xs"></tbody>
                     </table>
                 </div>
-                <div id="mobileTransactionList" class="p-4 md:hidden"></div> </div>
+                <div id="mobileTransactionList" class="p-4 md:hidden"></div>
+            </div>
         </section>
 
         <section id="metasTab" class="tab-content">
@@ -1096,156 +1100,102 @@
             });
         }
 
-        function exportPDF() {
+        // ════════════════════════════════════════════════════════════
+        //  NOVA FUNÇÃO exportPDF() COM jsPDF + autoTable
+        // ════════════════════════════════════════════════════════════
+        async function exportPDF() {
             const exportBtn = document.querySelector('.report-card button');
             const originalText = exportBtn.innerHTML;
             exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
             exportBtn.disabled = true;
 
-            setTimeout(() => {
-                try {
-                    const month = filterMonth.value;
-                    const filtered = transactions.filter(t => t.date.startsWith(month)).sort((a,b) => new Date(a.date) - new Date(b.date));
-                    let inc = 0, exp = 0;
-                    filtered.forEach(t => { 
-                        if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') {
-                            inc += t.amount;
-                        } else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
-                            exp += t.amount;
-                        }
-                    });
+            try {
+                const month = filterMonth.value;
+                const filtered = transactions.filter(t => t.date.startsWith(month)).sort((a,b) => new Date(a.date) - new Date(b.date));
+                
+                // Calcular totais
+                let inc = 0, exp = 0;
+                filtered.forEach(t => { 
+                    if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') {
+                        inc += t.amount;
+                    } else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
+                        exp += t.amount;
+                    }
+                });
+                const saldo = inc - exp;
 
-                    const element = document.createElement('div');
-                    element.style.padding = '40px';
-                    element.style.fontFamily = "'Helvetica Neue', Arial, sans-serif";
-                    element.style.color = '#1f2937';
-                    element.style.backgroundColor = '#ffffff';
-                    element.style.maxWidth = '800px';
-                    element.style.margin = '0 auto';
+                const [year, monthNum] = month.split('-');
+                const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                const monthName = monthNames[parseInt(monthNum) - 1];
 
-                    const [year, monthNum] = month.split('-');
-                    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-                    const monthName = monthNames[parseInt(monthNum) - 1];
+                // Inicializar jsPDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
 
-                    let tableRows = filtered.map(t => {
-                        const color = (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') ? '#10b981' : '#f43f5e';
-                        const categoryName = categoryMeta[t.category] ? categoryMeta[t.category].name : 'Sem categoria';
-                        const icon = categoryMeta[t.category] ? categoryMeta[t.category].icon : '📌';
-                        const isRecurring = t.groupId ? ' 🔁' : '';
-                        return `
-                        <tr style="border-bottom: 1px solid #e5e7eb;">
-                            <td style="padding: 12px 8px; font-size: 12px; color: #6b7280;">${formatDate(t.date)}</td>
-                            <td style="padding: 12px 8px; font-size: 12px; font-weight: 600; color: #1f2937;">${t.description}${isRecurring}</td>
-                            <td style="padding: 12px 8px; font-size: 12px; color: #6b7280;">${icon} ${categoryName}</td>
-                            <td style="padding: 12px 8px; font-size: 12px; color: ${t.paid ? '#10b981' : '#f59e0b'}; font-weight: 600;">${t.paid ? '✅ Pago' : '⏳ Pendente'}</td>
-                            <td style="padding: 12px 8px; font-size: 13px; font-weight: 700; color: ${color}; text-align: right;">${formatCurrency(t.amount)}</td>
-                        </tr>`;
-                    }).join('');
+                // Cabeçalho Oficial (Inspirado no app Check)
+                doc.setFont("helvetica", "bold"); 
+                doc.setFontSize(22); 
+                doc.setTextColor(99, 102, 241); // Indigo do Finwise
+                doc.text("FINWISE", 20, 20);
 
-                    const saldo = inc - exp;
-                    const saldoColor = saldo >= 0 ? '#10b981' : '#f43f5e';
+                doc.setFontSize(10); 
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Relatório Financeiro Premium v3.0 • Gerado em ${new Date().toLocaleDateString('pt-PT')}`, 20, 28);
+                doc.line(20, 32, 190, 32);
 
-                    element.innerHTML = `
-                        <div style="text-align: center; border-bottom: 3px solid #6366f1; padding-bottom: 25px; margin-bottom: 30px;">
-                            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px;">
-                                <div style="background: linear-gradient(135deg, #6366f1, #ec4899); color: white; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900;">$</div>
-                                <h1 style="color: #6366f1; margin: 0; font-size: 32px; font-weight: 800;">Finwise</h1>
-                            </div>
-                            <h2 style="color: #4b5563; margin: 8px 0 0 0; font-size: 20px; font-weight: 600;">Relatório Financeiro</h2>
-                            <p style="color: #9ca3af; margin: 4px 0 0 0; font-size: 14px; font-weight: 500;">${monthName} de ${year}</p>
-                            <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 11px; font-weight: 400;">${filtered.filter(t => t.groupId).length} lançamentos recorrentes</p>
-                        </div>
+                doc.setFontSize(11); 
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Período: ${monthName} de ${year}`, 20, 42);
+                doc.text(`Receitas: R$ ${inc.toLocaleString('pt-PT', currencyConfig)} | Despesas: R$ ${exp.toLocaleString('pt-PT', currencyConfig)}`, 110, 42);
 
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 35px;">
-                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
-                                <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px;">💰 Receitas</div>
-                                <div style="font-size: 20px; color: #10b981; font-weight: 800;">${formatCurrency(inc)}</div>
-                            </div>
-                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
-                                <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px;">💳 Despesas</div>
-                                <div style="font-size: 20px; color: #f43f5e; font-weight: 800;">${formatCurrency(exp)}</div>
-                            </div>
-                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
-                                <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px;">📊 Saldo</div>
-                                <div style="font-size: 20px; color: ${saldoColor}; font-weight: 800;">${formatCurrency(saldo)}</div>
-                            </div>
-                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
-                                <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px;">📋 Lançamentos</div>
-                                <div style="font-size: 20px; color: #6366f1; font-weight: 800;">${filtered.length}</div>
-                            </div>
-                        </div>
+                // Estruturar dados para a tabela
+                const tableBody = filtered.map(t => {
+                    const categoryName = categoryMeta[t.category] ? categoryMeta[t.category].name : 'Sem categoria';
+                    const isRecurring = t.groupId ? ' (Recorrente)' : '';
+                    return [
+                        formatDate(t.date),
+                        t.description + isRecurring,
+                        categoryName,
+                        t.paid ? 'Pago' : 'Pendente',
+                        `R$ ${t.amount.toLocaleString('pt-PT', currencyConfig)}`
+                    ];
+                });
 
-                        <div style="margin-bottom: 20px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                <h3 style="color: #1f2937; margin: 0; font-size: 16px; font-weight: 700;">📋 Detalhamento de Lançamentos</h3>
-                                <span style="font-size: 12px; color: #9ca3af; font-weight: 500;">${filtered.length} transações</span>
-                            </div>
-                            <table style="width: 100%; border-collapse: collapse; text-align: left; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
-                                <thead>
-                                    <tr style="background: #f1f5f9; border-bottom: 2px solid #e5e7eb;">
-                                        <th style="padding: 12px 8px; font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Data</th>
-                                        <th style="padding: 12px 8px; font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Descrição</th>
-                                        <th style="padding: 12px 8px; font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Categoria</th>
-                                        <th style="padding: 12px 8px; font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Status</th>
-                                        <th style="padding: 12px 8px; font-size: 10px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; text-align: right;">Valor</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${tableRows.length > 0 ? tableRows : '<tr><td colspan="5" style="text-align:center; padding: 30px; color: #9ca3af; font-size: 14px;">Nenhum lançamento encontrado para este período.</td></tr>'}
-                                </tbody>
-                            </table>
-                        </div>
+                // Configurar a tabela AutoTable
+                doc.autoTable({
+                    startY: 48,
+                    head: [['Data', 'Descrição', 'Categoria', 'Status', 'Valor']],
+                    body: tableBody,
+                    theme: 'grid',
+                    headStyles: { fillColor: [99, 102, 241], halign: 'center', textColor: 255 }, // Indigo Finwise
+                    styles: { fontSize: 9, halign: 'center' },
+                    columnStyles: { 
+                        1: { halign: 'left' } 
+                    },
+                    foot: [
+                        [ 
+                            { content: 'SALDO FINAL DO PERÍODO (R$)', colSpan: 4, styles: { halign: 'right', fontStyle: 'bold' } }, 
+                            `R$ ${saldo.toLocaleString('pt-PT', currencyConfig)}` 
+                        ]
+                    ],
+                    // Cor verde para saldo positivo e vermelho para negativo
+                    footStyles: { 
+                        fillColor: [240, 240, 240], 
+                        textColor: saldo >= 0 ? [16, 185, 129] : [244, 63, 94], 
+                        lineWidth: 0.1 
+                    }
+                });
 
-                        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
-                            <div style="font-size: 12px; color: #9ca3af; font-weight: 500;">
-                                <span style="font-weight: 600;">Resumo:</span> 
-                                ${filtered.filter(t => t.paid).length} pagos, 
-                                ${filtered.filter(t => !t.paid).length} pendentes
-                                ${filtered.filter(t => t.groupId).length > 0 ? `, ${filtered.filter(t => t.groupId).length} recorrentes` : ''}
-                            </div>
-                            <div style="font-size: 11px; color: #9ca3af; text-align: right;">
-                                <div>Gerado em ${new Date().toLocaleDateString('pt-PT')} às ${new Date().toLocaleTimeString('pt-PT', {hour: '2-digit', minute: '2-digit'})}</div>
-                                <div style="font-weight: 600; color: #6366f1; margin-top: 4px;">Finwise v${CURRENT_VERSION}</div>
-                            </div>
-                        </div>
-                    `;
+                doc.save(`Finwise_Relatorio_${monthName}_${year}.pdf`);
+                showToast("📄 PDF Exportado com sucesso!", "success");
 
-                    const opt = {
-                        margin: [15, 15, 15, 15],
-                        filename: `finwise_${month}.pdf`,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { 
-                            scale: 2,
-                            useCORS: true,
-                            logging: false
-                        },
-                        jsPDF: { 
-                            unit: 'mm', 
-                            format: 'a4', 
-                            orientation: 'portrait' 
-                        }
-                    };
-
-                    html2pdf().set(opt).from(element).save()
-                        .then(() => {
-                            showToast('📄 Relatório gerado com sucesso!', 'success');
-                            exportBtn.innerHTML = originalText;
-                            exportBtn.disabled = false;
-                        })
-                        .catch(err => {
-                            console.error('Erro no PDF:', err);
-                            showToast('Erro ao gerar PDF. Tente novamente.', 'error');
-                            exportBtn.innerHTML = originalText;
-                            exportBtn.disabled = false;
-                        });
-
-                } catch (error) {
-                    console.error('Erro na exportação:', error);
-                    showToast('Erro ao gerar PDF. Tente novamente.', 'error');
-                    exportBtn.innerHTML = originalText;
-                    exportBtn.disabled = false;
-                }
-            }, 300);
+            } catch (error) {
+                console.error('Erro na exportação:', error);
+                showToast('Erro ao gerar PDF. Tente novamente.', 'error');
+            } finally {
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+            }
         }
 
         function showTab(tab) {
