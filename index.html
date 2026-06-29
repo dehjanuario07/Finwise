@@ -144,6 +144,37 @@
             transition: all 0.3s ease;
         }
         .goal-card:hover { border-color: rgba(99, 102, 241, 0.4); transform: translateY(-3px); }
+
+        /* Estilo para o seletor de período do gráfico */
+        .period-selector {
+            display: flex;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .period-selector button {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: #64748b;
+            border: none;
+            cursor: pointer;
+        }
+        .period-selector button:hover {
+            color: #e2e8f0;
+        }
+        .period-selector button.active {
+            background: #6366f1;
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
     </style>
 </head>
 <body class="text-slate-200 min-h-screen p-4 lg:p-8">
@@ -286,7 +317,7 @@
 
         <section id="dashboardTab" class="tab-content active">
             <div class="bento-grid">
-                <!-- Total Balance Card - MOSTRA TODOS OS LANÇAMENTOS (saldo geral) -->
+                <!-- Total Balance Card -->
                 <div class="bento-item col-span-full lg:col-span-2 lg:row-span-2 border-l-4 border-l-indigo-500">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Saldo Geral</span>
@@ -305,7 +336,7 @@
                     </div>
                 </div>
 
-                <!-- Monthly Balance Card - MOSTRA TODOS OS LANÇAMENTOS DO MÊS (fixos, parcelados e únicos) -->
+                <!-- Monthly Balance Card -->
                 <div class="bento-item col-span-full lg:col-span-2 border-l-4 border-l-cyan-400">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Saldo Mensal</span>
@@ -321,13 +352,13 @@
                     </div>
                 </div>
 
-                <!-- Ganhos - MOSTRA TODOS OS LANÇAMENTOS DO MÊS -->
+                <!-- Ganhos -->
                 <div class="bento-item col-span-1 border-l-4 border-l-emerald-500">
                     <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-1">Ganhos</p>
                     <h3 id="totalIncomes" class="text-xl font-black text-emerald-400 truncate">R$ 0,00</h3>
                 </div>
 
-                <!-- Gastos - MOSTRA TODOS OS LANÇAMENTOS DO MÊS -->
+                <!-- Gastos -->
                 <div class="bento-item col-span-1 border-l-4 border-l-rose-500">
                     <div class="flex justify-between items-center mb-1">
                         <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Gastos</p>
@@ -501,10 +532,18 @@
                 </div>
 
                 <div class="report-card full-width">
-                    <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
-                        <i class="fas fa-chart-bar text-rose-400 text-sm"></i>
-                        Comparativo Mensal
-                    </h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-white font-extrabold text-lg flex items-center gap-2">
+                            <i class="fas fa-chart-bar text-rose-400 text-sm"></i>
+                            Comparativo Mensal
+                        </h3>
+                        <!-- SELETOR DE PERÍODO - CENTRALIZADO (4, 7 e 13 meses) -->
+                        <div class="period-selector" id="periodSelector">
+                            <button data-period="4" class="active">4M</button>
+                            <button data-period="7">7M</button>
+                            <button data-period="13">13M</button>
+                        </div>
+                    </div>
                     <div class="h-[280px]">
                         <canvas id="comparisonChart"></canvas>
                     </div>
@@ -542,6 +581,7 @@
         let charts = { line: null, donut: null, comparison: null };
         let currentEntryType = 'expense';
         let transactionToDeleteId = null;
+        let selectedPeriod = 4; // padrão: 4 meses (1 antes + atual + 2 depois)
 
         const categoryMeta = {
             'salario': { name: 'Salário', icon: '💰', color: '#10b981', type: 'income' },
@@ -777,7 +817,6 @@
 
         function renderDashboard() {
             // ==================== SALDO GERAL ====================
-            // MOSTRA TODOS OS LANÇAMENTOS (únicos, fixos e parcelados)
             const allFiltered = transactions;
             let allInc = 0, allExp = 0;
             allFiltered.forEach(t => { 
@@ -792,7 +831,6 @@
             document.getElementById('totalBalance').innerHTML = formatCurrency(allBal);
 
             // ==================== DASHBOARD MENSAL ====================
-            // MOSTRA TODOS OS LANÇAMENTOS DO MÊS (fixos, parcelados e únicos)
             const month = filterMonth.value;
             const monthlyFiltered = transactions.filter(t => t.date.startsWith(month));
             
@@ -815,7 +853,7 @@
             document.getElementById('monthlyIncome').innerHTML = formatCurrency(monthInc);
             document.getElementById('monthlyExpense').innerHTML = formatCurrency(monthExp);
             
-            // Trend calculation (compare com mês anterior - TODOS OS LANÇAMENTOS)
+            // Trend calculation
             const prevMonth = new Date(month);
             prevMonth.setMonth(prevMonth.getMonth() - 1);
             const prevKey = prevMonth.toISOString().slice(0, 7);
@@ -844,7 +882,7 @@
                 trendEl.className = `text-xs font-bold ${isPositive ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'} px-2 py-0.5 rounded-lg`;
             }
 
-            // Budget progress (TODOS OS LANÇAMENTOS do mês)
+            // Budget progress
             const budgetPercent = Math.min((monthExp / (monthInc || 1)) * 100, 100);
             const progressBar = document.getElementById('budgetProgressBar');
             progressBar.style.width = `${budgetPercent}%`;
@@ -853,7 +891,7 @@
             else if (budgetPercent > 70) progressBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
             else progressBar.style.background = 'linear-gradient(90deg, #6366f1, #ec4899)';
 
-            // Daily average (TODOS OS LANÇAMENTOS do mês)
+            // Daily average
             const days = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
             document.getElementById('avgDaily').textContent = formatCurrency(monthExp / days);
             
@@ -863,7 +901,7 @@
             const todayStr = new Date().toISOString().slice(0, 10);
             const tomorrowStr = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().slice(0, 10);
 
-            // Latest activity (TODOS OS LANÇAMENTOS do mês)
+            // Latest activity
             document.getElementById('latestActivity').innerHTML = [...monthlyFiltered]
                 .sort((a,b) => b.id - a.id).slice(0, 10)
                 .map(t => {
@@ -1053,6 +1091,10 @@
             `}).join('');
         }
 
+        // ════════════════════════════════════════════════════════════
+        //  FUNÇÃO renderReports() COM SELETOR DE PERÍODO CENTRALIZADO
+        //  (4, 7 e 13 meses - centrado no mês selecionado)
+        // ════════════════════════════════════════════════════════════
         function renderReports() {
             const month = filterMonth.value;
             const filtered = transactions.filter(t => t.date.startsWith(month));
@@ -1067,16 +1109,63 @@
                 <div class="stat-card text-center"><p class="text-[8px] text-slate-500 uppercase font-black">Saldo</p><p class="text-lg font-bold ${inc - exp >= 0 ? 'text-emerald-400' : 'text-rose-400'} mt-1">${formatCurrency(inc - exp)}</p></div>
             `;
 
+            // =========================================================
+            // GRÁFICO COMPARATIVO MENSAL - CENTRADO NO MÊS SELECIONADO
+            // =========================================================
             const months = [], monthData = [];
-            for (let i = 5; i >= 0; i--) {
-                const d = new Date(); d.setMonth(d.getMonth() - i);
-                const key = d.toISOString().slice(0, 7);
+            
+            // Mês atual (baseado no filtro)
+            const currentMonth = month;
+            const currentDate = new Date(currentMonth + '-01');
+            
+            // Calcular quantos meses antes e depois baseado no período selecionado
+            // 4 meses = 1 antes + atual + 2 depois
+            // 7 meses = 3 antes + atual + 3 depois
+            // 13 meses = 6 antes + atual + 6 depois
+            let mesesAntes = 0;
+            let mesesDepois = 0;
+            
+            switch(selectedPeriod) {
+                case 4:
+                    mesesAntes = 1;
+                    mesesDepois = 2;
+                    break;
+                case 7:
+                    mesesAntes = 3;
+                    mesesDepois = 3;
+                    break;
+                case 13:
+                    mesesAntes = 6;
+                    mesesDepois = 6;
+                    break;
+                default:
+                    mesesAntes = 3;
+                    mesesDepois = 3;
+            }
+            
+            // Mês de início (meses antes)
+            const startDate = new Date(currentDate);
+            startDate.setMonth(startDate.getMonth() - mesesAntes);
+            
+            // Mês de fim (meses depois)
+            const endDate = new Date(currentDate);
+            endDate.setMonth(endDate.getMonth() + mesesDepois);
+            
+            // Gerar lista de meses do início até o fim
+            let current = new Date(startDate);
+            
+            while (current <= endDate) {
+                const key = current.toISOString().slice(0, 7);
                 const mData = transactions.filter(t => t.date.startsWith(key));
-                months.push(`${d.getMonth()+1}/${d.getFullYear().toString().slice(2)}`);
+                // Formato: "MM/AA" (ex: 06/26)
+                const monthLabel = `${String(current.getMonth()+1).padStart(2, '0')}/${current.getFullYear().toString().slice(2)}`;
+                months.push(monthLabel);
                 monthData.push({
                     inc: mData.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'income').reduce((s, t) => s + t.amount, 0),
-                    exp: mData.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0)
+                    exp: mData.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0),
+                    isCurrent: key === currentMonth // Marca o mês atual para destaque
                 });
+                current.setMonth(current.getMonth() + 1);
             }
             
             if(charts.comparison) charts.comparison.destroy();
@@ -1085,23 +1174,55 @@
                 data: {
                     labels: months,
                     datasets: [
-                        { label: 'Receitas', data: monthData.map(d => d.inc), backgroundColor: 'rgba(16, 185, 129, 0.6)', borderColor: '#10b981', borderWidth: 2 },
-                        { label: 'Despesas', data: monthData.map(d => d.exp), backgroundColor: 'rgba(244, 63, 94, 0.6)', borderColor: '#f43f5e', borderWidth: 2 }
+                        { 
+                            label: 'Receitas', 
+                            data: monthData.map(d => d.inc), 
+                            backgroundColor: 'rgba(16, 185, 129, 0.6)', 
+                            borderColor: '#10b981', 
+                            borderWidth: 2 
+                        },
+                        { 
+                            label: 'Despesas', 
+                            data: monthData.map(d => d.exp), 
+                            backgroundColor: 'rgba(244, 63, 94, 0.6)', 
+                            borderColor: '#f43f5e', 
+                            borderWidth: 2 
+                        }
                     ]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#64748b', font: { size: 10, weight: 'bold' } } } },
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { 
+                            labels: { color: '#64748b', font: { size: 10, weight: 'bold' } } 
+                        }
+                    },
                     scales: {
-                        x: { ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(71, 85, 105, 0.1)' } },
-                        y: { ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(71, 85, 105, 0.1)' } }
+                        x: { 
+                            ticks: { 
+                                color: '#475569', 
+                                font: { size: 9, weight: 'bold' },
+                                // Destacar o mês atual com cor diferente
+                                callback: function(value, index) {
+                                    const label = this.getLabelForValue(value);
+                                    const isCurrent = monthData[index] && monthData[index].isCurrent;
+                                    return isCurrent ? `◀ ${label} ▶` : label;
+                                }
+                            },
+                            grid: { color: 'rgba(71, 85, 105, 0.1)' }
+                        },
+                        y: { 
+                            ticks: { color: '#475569', font: { size: 9 } }, 
+                            grid: { color: 'rgba(71, 85, 105, 0.1)' } 
+                        }
                     }
                 }
             });
         }
 
         // ════════════════════════════════════════════════════════════
-        //  FUNÇÃO exportPDF() CORRIGIDA - SEM ACENTOS/Ç E ÚLTIMA LINHA AJUSTADA
+        //  FUNÇÃO exportPDF() CORRIGIDA
         // ════════════════════════════════════════════════════════════
         async function exportPDF() {
             const exportBtn = document.querySelector('.report-card button');
@@ -1113,7 +1234,6 @@
                 const month = filterMonth.value;
                 const filtered = transactions.filter(t => t.date.startsWith(month)).sort((a,b) => new Date(a.date) - new Date(b.date));
                 
-                // Calcular totais
                 let inc = 0, exp = 0;
                 filtered.forEach(t => { 
                     if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') {
@@ -1128,11 +1248,9 @@
                 const monthNames = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
                 const monthName = monthNames[parseInt(monthNum) - 1];
 
-                // Inicializar jsPDF
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
 
-                // Cabeçalho Oficial
                 doc.setFont("helvetica", "bold"); 
                 doc.setFontSize(22); 
                 doc.setTextColor(99, 102, 241);
@@ -1148,9 +1266,7 @@
                 doc.text(`Periodo: ${monthName} de ${year}`, 20, 42);
                 doc.text(`Receitas: R$ ${inc.toLocaleString('pt-PT', currencyConfig)} | Despesas: R$ ${exp.toLocaleString('pt-PT', currencyConfig)}`, 110, 42);
 
-                // Estruturar dados para a tabela - REMOVENDO ACENTOS E Ç
                 const tableBody = filtered.map(t => {
-                    // Remove acentos e caracteres especiais
                     const descClean = t.description
                         .normalize('NFD')
                         .replace(/[\u0300-\u036f]/g, '')
@@ -1177,7 +1293,6 @@
                     ];
                 });
 
-                // Configurar a tabela AutoTable
                 doc.autoTable({
                     startY: 48,
                     head: [['Data', 'Descricao', 'Categoria', 'Status', 'Valor']],
@@ -1314,11 +1429,32 @@
             });
         }
 
+        // ════════════════════════════════════════════════════════════
+        //  CONFIGURAÇÃO DO SELETOR DE PERÍODO CENTRALIZADO
+        // ════════════════════════════════════════════════════════════
+        function setupPeriodSelector() {
+            const buttons = document.querySelectorAll('.period-selector button');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active de todos
+                    buttons.forEach(b => b.classList.remove('active'));
+                    // Adiciona active no clicado
+                    this.classList.add('active');
+                    // Atualiza o período selecionado
+                    selectedPeriod = parseInt(this.dataset.period);
+                    // Re-renderiza o gráfico
+                    renderReports();
+                    showToast(`Mostrando ${selectedPeriod} meses (centrado no mês selecionado)`, 'info');
+                });
+            });
+        }
+
         window.onload = () => {
             document.getElementById('versionLabel').innerText = `v${CURRENT_VERSION}`;
             filterMonth.value = new Date().toISOString().slice(0, 7);
             document.getElementById('dataEvento').value = new Date().toISOString().slice(0, 10);
             setEntryType('expense'); populateFilters(); renderAll();
+            setupPeriodSelector();
             
             document.getElementById('searchFilter').oninput = renderAll;
             document.getElementById('categoryFilter').onchange = renderAll;
