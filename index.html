@@ -175,9 +175,62 @@
             color: white;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
+
+        /* Estilo para o modal de vencimentos */
+        .due-modal-content {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .due-modal-content .due-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .due-modal-content .due-item:last-child {
+            border-bottom: none;
+        }
+        .due-modal-content .due-item .due-desc {
+            font-weight: 600;
+            font-size: 14px;
+            color: #e2e8f0;
+        }
+        .due-modal-content .due-item .due-amount {
+            font-weight: 800;
+            font-size: 14px;
+            color: #f43f5e;
+        }
+        .due-modal-content .due-empty {
+            text-align: center;
+            padding: 20px 0;
+            color: #64748b;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body class="text-slate-200 min-h-screen p-4 lg:p-8">
+
+    <!-- MODAL DE VENCIMENTOS DO DIA -->
+    <div id="dueModal" class="modal fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-[2rem] p-6 max-w-md w-full shadow-2xl">
+            <div class="text-center mb-4">
+                <div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-clock text-2xl text-rose-400"></i>
+                </div>
+                <h3 class="text-white font-extrabold text-lg">Vencimentos de Hoje</h3>
+                <p class="text-slate-400 text-xs mt-1">Confira os lançamentos que vencem hoje.</p>
+            </div>
+            <div id="dueList" class="due-modal-content">
+                <!-- Preenchido via JavaScript -->
+            </div>
+            <div class="mt-6">
+                <button onclick="closeModal('dueModal')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all text-sm shadow-lg shadow-indigo-900/20">
+                    OK, entendi
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div id="editModal" class="modal fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-[2rem] p-6 max-w-md w-full shadow-2xl">
@@ -294,9 +347,11 @@
                     </defs>
                 </svg>
                 <div>
+                    <!-- CABEÇALHO ATUALIZADO -->
                     <h1 class="text-3xl font-black tracking-tighter">
                         <span class="bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">Finwise</span>
                     </h1>
+                    <p class="text-[9px] font-bold text-slate-500 tracking-widest uppercase -mt-0.5">Intelligent Finance</p>
                 </div>
             </div>
             
@@ -555,7 +610,7 @@
             <div class="flex items-center gap-2">
                 <i class="fas fa-wallet text-indigo-500 text-xl"></i>
                 <span class="text-lg font-black bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent tracking-tighter">Finwise</span>
-                <span id="versionLabel" class="ml-2 px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-full text-[10px] font-black italic">v3.0</span>
+                <span id="versionLabel" class="ml-2 px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-full text-[10px] font-black italic">v3.1</span>
             </div>
             
             <div class="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-700"></div>
@@ -567,7 +622,7 @@
     </div>
 
     <script>
-        const CURRENT_VERSION = "3.0";
+        const CURRENT_VERSION = "3.1";
         let transactions = JSON.parse(localStorage.getItem('finwise_db')) || [];
         
         let goals = JSON.parse(localStorage.getItem('finwise_goals')) || [
@@ -581,7 +636,7 @@
         let charts = { line: null, donut: null, comparison: null };
         let currentEntryType = 'expense';
         let transactionToDeleteId = null;
-        let selectedPeriod = 4; // padrão: 4 meses (1 antes + atual + 2 depois)
+        let selectedPeriod = 4;
 
         const categoryMeta = {
             'salario': { name: 'Salário', icon: '💰', color: '#10b981', type: 'income' },
@@ -711,6 +766,61 @@
             document.getElementById('type').innerHTML = Object.entries(categoryMeta)
                 .filter(([_, m]) => m.type === type)
                 .map(([k, m]) => `<option value="${k}">${m.icon} ${m.name}</option>`).join('');
+        }
+
+        // ════════════════════════════════════════════════════════════
+        //  FUNÇÃO PARA VERIFICAR VENCIMENTOS DO DIA E MOSTRAR MODAL
+        // ════════════════════════════════════════════════════════════
+        function checkDueToday() {
+            const today = new Date().toISOString().slice(0, 10);
+            const dueToday = transactions.filter(t => t.date === today && !t.paid);
+            
+            const dueList = document.getElementById('dueList');
+            
+            if (dueToday.length === 0) {
+                dueList.innerHTML = `
+                    <div class="due-empty">
+                        <i class="fas fa-check-circle text-emerald-400 text-2xl block mb-2"></i>
+                        Nenhum vencimento para hoje! 🎉
+                    </div>
+                `;
+                // Mostra o modal mesmo assim? Melhor não mostrar se não houver vencimentos
+                return false;
+            }
+            
+            let html = '';
+            let totalDue = 0;
+            dueToday.forEach(t => {
+                const categoryName = categoryMeta[t.category] ? categoryMeta[t.category].name : 'Sem categoria';
+                const icon = categoryMeta[t.category] ? categoryMeta[t.category].icon : '📌';
+                html += `
+                    <div class="due-item">
+                        <div>
+                            <span class="due-desc">${icon} ${t.description}</span>
+                            <span class="text-[10px] text-slate-500 block">${categoryName}</span>
+                        </div>
+                        <span class="due-amount">${formatCurrency(t.amount)}</span>
+                    </div>
+                `;
+                totalDue += t.amount;
+            });
+            
+            dueList.innerHTML = `
+                <div class="text-center mb-3">
+                    <span class="text-rose-400 font-extrabold text-sm">${dueToday.length} lançamento(s) vencendo hoje</span>
+                    <span class="text-slate-500 text-xs block">Total: ${formatCurrency(totalDue)}</span>
+                </div>
+                ${html}
+            `;
+            
+            return true;
+        }
+
+        function showDueModal() {
+            const hasDue = checkDueToday();
+            if (hasDue) {
+                document.getElementById('dueModal').classList.add('active');
+            }
         }
 
         // SISTEMA DE METAS (CAIXINHAS)
@@ -1093,7 +1203,6 @@
 
         // ════════════════════════════════════════════════════════════
         //  FUNÇÃO renderReports() COM SELETOR DE PERÍODO CENTRALIZADO
-        //  (4, 7 e 13 meses - centrado no mês selecionado)
         // ════════════════════════════════════════════════════════════
         function renderReports() {
             const month = filterMonth.value;
@@ -1109,19 +1218,11 @@
                 <div class="stat-card text-center"><p class="text-[8px] text-slate-500 uppercase font-black">Saldo</p><p class="text-lg font-bold ${inc - exp >= 0 ? 'text-emerald-400' : 'text-rose-400'} mt-1">${formatCurrency(inc - exp)}</p></div>
             `;
 
-            // =========================================================
-            // GRÁFICO COMPARATIVO MENSAL - CENTRADO NO MÊS SELECIONADO
-            // =========================================================
             const months = [], monthData = [];
             
-            // Mês atual (baseado no filtro)
             const currentMonth = month;
             const currentDate = new Date(currentMonth + '-01');
             
-            // Calcular quantos meses antes e depois baseado no período selecionado
-            // 4 meses = 1 antes + atual + 2 depois
-            // 7 meses = 3 antes + atual + 3 depois
-            // 13 meses = 6 antes + atual + 6 depois
             let mesesAntes = 0;
             let mesesDepois = 0;
             
@@ -1143,27 +1244,23 @@
                     mesesDepois = 3;
             }
             
-            // Mês de início (meses antes)
             const startDate = new Date(currentDate);
             startDate.setMonth(startDate.getMonth() - mesesAntes);
             
-            // Mês de fim (meses depois)
             const endDate = new Date(currentDate);
             endDate.setMonth(endDate.getMonth() + mesesDepois);
             
-            // Gerar lista de meses do início até o fim
             let current = new Date(startDate);
             
             while (current <= endDate) {
                 const key = current.toISOString().slice(0, 7);
                 const mData = transactions.filter(t => t.date.startsWith(key));
-                // Formato: "MM/AA" (ex: 06/26)
                 const monthLabel = `${String(current.getMonth()+1).padStart(2, '0')}/${current.getFullYear().toString().slice(2)}`;
                 months.push(monthLabel);
                 monthData.push({
                     inc: mData.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'income').reduce((s, t) => s + t.amount, 0),
                     exp: mData.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0),
-                    isCurrent: key === currentMonth // Marca o mês atual para destaque
+                    isCurrent: key === currentMonth
                 });
                 current.setMonth(current.getMonth() + 1);
             }
@@ -1203,7 +1300,6 @@
                             ticks: { 
                                 color: '#475569', 
                                 font: { size: 9, weight: 'bold' },
-                                // Destacar o mês atual com cor diferente
                                 callback: function(value, index) {
                                     const label = this.getLabelForValue(value);
                                     const isCurrent = monthData[index] && monthData[index].isCurrent;
@@ -1222,7 +1318,7 @@
         }
 
         // ════════════════════════════════════════════════════════════
-        //  FUNÇÃO exportPDF() CORRIGIDA
+        //  FUNÇÃO exportPDF() COM NOME FIF-MMAAAA
         // ════════════════════════════════════════════════════════════
         async function exportPDF() {
             const exportBtn = document.querySelector('.report-card button');
@@ -1245,8 +1341,6 @@
                 const saldo = inc - exp;
 
                 const [year, monthNum] = month.split('-');
-                const monthNames = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-                const monthName = monthNames[parseInt(monthNum) - 1];
 
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
@@ -1258,11 +1352,15 @@
 
                 doc.setFontSize(10); 
                 doc.setTextColor(100, 100, 100);
-                doc.text(`Relatorio Financeiro Premium v3.0 • Gerado em ${new Date().toLocaleDateString('pt-PT')}`, 20, 28);
+                doc.text(`Relatorio Financeiro Premium v3.1 • Gerado em ${new Date().toLocaleDateString('pt-PT')}`, 20, 28);
                 doc.line(20, 32, 190, 32);
 
                 doc.setFontSize(11); 
                 doc.setTextColor(0, 0, 0);
+                
+                const monthNames = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                const monthName = monthNames[parseInt(monthNum) - 1];
+                
                 doc.text(`Periodo: ${monthName} de ${year}`, 20, 42);
                 doc.text(`Receitas: R$ ${inc.toLocaleString('pt-PT', currencyConfig)} | Despesas: R$ ${exp.toLocaleString('pt-PT', currencyConfig)}`, 110, 42);
 
@@ -1342,7 +1440,7 @@
                     }
                 });
 
-                doc.save(`Finwise_Relatorio_${monthName}_${year}.pdf`);
+                doc.save(`FIF-${String(monthNum).padStart(2, '0')}${year}.pdf`);
                 showToast("PDF Exportado com sucesso!", "success");
 
             } catch (error) {
@@ -1429,20 +1527,13 @@
             });
         }
 
-        // ════════════════════════════════════════════════════════════
-        //  CONFIGURAÇÃO DO SELETOR DE PERÍODO CENTRALIZADO
-        // ════════════════════════════════════════════════════════════
         function setupPeriodSelector() {
             const buttons = document.querySelectorAll('.period-selector button');
             buttons.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    // Remove active de todos
                     buttons.forEach(b => b.classList.remove('active'));
-                    // Adiciona active no clicado
                     this.classList.add('active');
-                    // Atualiza o período selecionado
                     selectedPeriod = parseInt(this.dataset.period);
-                    // Re-renderiza o gráfico
                     renderReports();
                     showToast(`Mostrando ${selectedPeriod} meses (centrado no mês selecionado)`, 'info');
                 });
@@ -1459,6 +1550,11 @@
             document.getElementById('searchFilter').oninput = renderAll;
             document.getElementById('categoryFilter').onchange = renderAll;
             document.getElementById('statusFilter').onchange = renderAll;
+
+            // ════════════════════════════════════════════════════════
+            //  MOSTRA MODAL DE VENCIMENTOS AO CARREGAR O APP
+            // ════════════════════════════════════════════════════════
+            setTimeout(showDueModal, 800);
         };
 
         filterMonth.onchange = renderAll;
