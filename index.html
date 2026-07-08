@@ -94,14 +94,6 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
-        .budget-progress {
-            position: relative; height: 8px; background: rgba(255, 255, 255, 0.05);
-            border-radius: 100px; overflow: hidden; margin-top: 8px;
-        }
-        .budget-progress .bar {
-            height: 100%; border-radius: 100px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
-        }
-
         .mobile-card {
             display: none; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 1rem; padding: 1rem; margin-bottom: 0.75rem;
@@ -160,145 +152,6 @@
             height: 3px;
             background: var(--goal-color, linear-gradient(90deg, #6366f1, #ec4899));
             opacity: 0.8;
-        }
-
-        .indicator-value {
-            font-size: 1.5rem;
-            font-weight: 900;
-            line-height: 1.2;
-        }
-
-        .indicator-label {
-            font-size: 0.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #64748b;
-        }
-
-        .indicator-badge {
-            font-size: 0.55rem;
-            font-weight: 800;
-            padding: 0.15rem 0.6rem;
-            border-radius: 100px;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
-        .edit-toggle-group {
-            display: flex;
-            gap: 0.5rem;
-            background: rgba(15, 23, 42, 0.5);
-            padding: 0.25rem;
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .edit-toggle-btn {
-            flex: 1;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            background: transparent;
-            color: #64748b;
-        }
-        .edit-toggle-btn.active-income {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
-        }
-        .edit-toggle-btn.active-expense {
-            background: linear-gradient(135deg, #f43f5e, #e11d48);
-            color: white;
-            box-shadow: 0 4px 15px rgba(244, 63, 94, 0.2);
-        }
-        .edit-toggle-btn:hover:not(.active-income):not(.active-expense) {
-            color: #e2e8f0;
-        }
-
-        .goal-progress-ring {
-            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .goal-stat {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 0.75rem;
-            padding: 0.75rem;
-            text-align: center;
-            flex: 1;
-        }
-        .goal-stat .value {
-            font-size: 1.1rem;
-            font-weight: 900;
-            color: #e2e8f0;
-        }
-        .goal-stat .label {
-            font-size: 0.55rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #64748b;
-            margin-top: 0.15rem;
-        }
-
-        .goal-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-        .goal-actions button {
-            flex: 1;
-            padding: 0.5rem;
-            border-radius: 0.75rem;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-        .goal-actions .btn-add {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-        .goal-actions .btn-add:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
-        }
-        .goal-actions .btn-edit {
-            background: rgba(99, 102, 241, 0.15);
-            color: #818cf8;
-        }
-        .goal-actions .btn-edit:hover {
-            background: rgba(99, 102, 241, 0.25);
-        }
-        .goal-actions .btn-delete {
-            background: rgba(244, 63, 94, 0.15);
-            color: #fb7185;
-        }
-        .goal-actions .btn-delete:hover {
-            background: rgba(244, 63, 94, 0.25);
-        }
-
-        .goal-completed-badge {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 100px;
-            font-size: 0.55rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
         .calendar-grid {
@@ -419,39 +272,6 @@
             text-align: center;
             letter-spacing: 0.05em;
             padding: 0.25rem 0;
-        }
-
-        .day-detail-modal .transaction-item {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .day-detail-modal .transaction-item:last-child {
-            border-bottom: none;
-        }
-
-        @media (max-width: 640px) {
-            .calendar-day {
-                min-height: 44px;
-                padding: 0.2rem;
-            }
-            .calendar-day .day-number {
-                font-size: 0.7rem;
-            }
-            .calendar-day .day-indicators .dot {
-                width: 4px;
-                height: 4px;
-            }
-            .calendar-day.today .day-number {
-                width: 22px;
-                height: 22px;
-                font-size: 0.65rem;
-            }
-            .calendar-day .day-total {
-                font-size: 0.4rem;
-            }
         }
 
         .chart-container {
@@ -939,6 +759,45 @@
         .alert-badge.warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
         .alert-badge.success { background: rgba(16, 185, 129, 0.15); color: #10b981; }
         .alert-badge.info { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+
+        .category-analysis {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .category-analysis:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .luxo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 100px;
+            font-size: 0.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .luxo-badge.critico { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
+        .luxo-badge.alto { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .luxo-badge.medio { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+        .luxo-badge.baixo { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        
+        .improvement-item {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            background: rgba(15, 23, 42, 0.3);
+            border-left: 3px solid #6366f1;
+            margin-bottom: 0.5rem;
+        }
+        .improvement-item:last-child { margin-bottom: 0; }
+        .improvement-item .impacto { font-size: 0.55rem; font-weight: 700; }
+        .impacto.alto { color: #f43f5e; }
+        .impacto.medio { color: #f59e0b; }
+        .impacto.baixo { color: #10b981; }
     </style>
 </head>
 <body class="text-slate-200 min-h-screen p-4 lg:p-8">
@@ -1623,9 +1482,9 @@
                         <div>
                             <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-3">
                                 <i class="fas fa-file-alt text-indigo-400"></i>
-                                Relatório Executivo
+                                Relatório Executivo Detalhado
                             </h2>
-                            <p class="text-xs text-slate-400 mt-1">Análise financeira estratégica - Visão do Diretor Financeiro</p>
+                            <p class="text-xs text-slate-400 mt-1">Análise aprofundada - Visão Estratégica do CFO</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="alert-badge info">
@@ -1711,6 +1570,56 @@
 
                 <div class="report-card full-width">
                     <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
+                        <i class="fas fa-microscope text-cyan-400 text-sm"></i>
+                        Análise Detalhada de Gastos
+                    </h3>
+                    <div id="detailedSpendingAnalysis" class="space-y-4"></div>
+                </div>
+
+                <div class="report-card full-width">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
+                                <i class="fas fa-arrow-up text-rose-400 text-sm"></i>
+                                Top 5 - Onde Mais Gasto
+                            </h3>
+                            <div id="topSpendingCategories" class="space-y-3"></div>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
+                                <i class="fas fa-arrow-down text-emerald-400 text-sm"></i>
+                                Bottom 5 - Onde Menos Gasto
+                            </h3>
+                            <div id="bottomSpendingCategories" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-card full-width">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
+                                <i class="fas fa-crown text-amber-400 text-sm"></i>
+                                Possíveis Luxos Identificados
+                            </h3>
+                            <div id="luxuryItems" class="space-y-3">
+                                <p class="text-sm text-slate-400">Analisando padrões de gastos...</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
+                                <i class="fas fa-lightbulb text-indigo-400 text-sm"></i>
+                                Recomendações de Melhoria
+                            </h3>
+                            <div id="improvementSuggestions" class="space-y-3">
+                                <p class="text-sm text-slate-400">Gerando recomendações personalizadas...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-card full-width">
+                    <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
                         <i class="fas fa-calculator text-amber-400 text-sm"></i>
                         Métricas Financeiras Avançadas
                     </h3>
@@ -1759,7 +1668,7 @@
     </div>
 
     <script>
-        const CURRENT_VERSION = "4.0";
+        // ============ CONFIGURAÇÕES INICIAIS ============
         let transactions = JSON.parse(localStorage.getItem('finwise_db')) || [];
         let goals = JSON.parse(localStorage.getItem('finwise_goals')) || [];
 
@@ -1835,6 +1744,41 @@
         [amountInput, goalAmountInput, fundAmountInput].forEach(input => {
             if (input) formatCurrencyInput(input);
         });
+
+        // ============ FUNÇÃO PRINCIPAL - TABS ============
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            const tabElement = document.getElementById(`${tab}Tab`);
+            if (tabElement) tabElement.classList.add('active');
+            
+            const btns = { 
+                dashboard: 'tabDashboardBtn', 
+                lancamentos: 'tabLancamentosBtn', 
+                calendario: 'tabCalendarioBtn', 
+                graficos: 'tabGraficosBtn', 
+                metas: 'tabMetasBtn', 
+                relatorios: 'tabRelatoriosBtn' 
+            };
+            
+            Object.keys(btns).forEach(key => {
+                const btn = document.getElementById(btns[key]);
+                if (btn) {
+                    btn.className = `tab-btn ${key === tab ? 'active' : ''}`;
+                }
+            });
+
+            if (tab === 'relatorios') {
+                renderExecutiveReport();
+                renderDetailedAnalysis();
+            }
+            if (tab === 'metas') { 
+                renderGoals(); 
+                renderGoalsSummary(); 
+            }
+            if (tab === 'calendario') renderCalendar();
+            if (tab === 'graficos') renderGraficos();
+            if (tab === 'dashboard' || tab === 'lancamentos') renderAll();
+        }
 
         // ============ CATEGORY MANAGEMENT ============
         function saveCategories() {
@@ -2018,6 +1962,14 @@
                     .map(([k, cat]) => `<option value="${k}" ${k === filterVal ? 'selected' : ''}>${cat.icon} ${cat.name}</option>`).join('');
         }
 
+        function populateFilters() {
+            const select = document.getElementById('categoryFilter');
+            select.innerHTML = `<option value="all">Todas categorias</option>` +
+                Object.entries(categoryMeta)
+                    .sort((a, b) => a[1].name.localeCompare(b[1].name))
+                    .map(([k, cat]) => `<option value="${k}">${cat.icon} ${cat.name}</option>`).join('');
+        }
+
         // ============ SALVAR E CARREGAR ============
         function save() { 
             localStorage.setItem('finwise_db', JSON.stringify(transactions)); 
@@ -2093,7 +2045,6 @@
                 trendEl.className = `text-xs font-bold ${isPositive ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'} px-2 py-0.5 rounded-lg`;
             }
 
-            // Últimas atividades - ordenado: pendentes primeiro, depois pagos, e por data crescente
             const sortedActivity = [...monthlyFiltered]
                 .sort((a, b) => {
                     if (a.paid !== b.paid) return a.paid ? 1 : -1;
@@ -2804,22 +2755,27 @@
             renderHeatmap();
         }
 
-        // ============ RELATÓRIO EXECUTIVO ============
+        // ============ RELATÓRIO EXECUTIVO - CORRIGIDO ============
         function renderExecutiveReport() {
             const month = filterMonth.value;
+            
+            // 🔥 FILTRA APENAS O MÊS SELECIONADO
             const filtered = transactions.filter(t => t.date.startsWith(month));
             
+            // Calcula totais do mês
             let totalRevenue = 0, totalExpenses = 0;
             filtered.forEach(t => {
                 if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') totalRevenue += t.amount;
                 else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') totalExpenses += t.amount;
             });
+            
             const netIncome = totalRevenue - totalExpenses;
             const margin = totalRevenue > 0 ? (netIncome / totalRevenue) * 100 : 0;
             
             const daysInMonth = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
             const burnRate = daysInMonth > 0 ? totalExpenses / daysInMonth : 0;
             
+            // Saldo total acumulado (todos os meses)
             const totalBalance = transactions.reduce((s, t) => {
                 if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') return s + t.amount;
                 if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') return s - t.amount;
@@ -2827,6 +2783,7 @@
             }, 0);
             const runway = burnRate > 0 ? totalBalance / burnRate : 0;
 
+            // Atualiza KPIs
             document.getElementById('kpiRevenue').textContent = formatCurrency(totalRevenue);
             document.getElementById('kpiExpenses').textContent = formatCurrency(totalExpenses);
             document.getElementById('kpiNetIncome').textContent = formatCurrency(netIncome);
@@ -2836,6 +2793,7 @@
             document.getElementById('kpiBurnRate').textContent = formatCurrency(burnRate);
             document.getElementById('kpiRunway').textContent = `${Math.floor(runway)} meses`;
 
+            // Variação com mês anterior
             const prevMonth = new Date(month);
             prevMonth.setMonth(prevMonth.getMonth() - 1);
             const prevKey = prevMonth.toISOString().slice(0, 7);
@@ -2884,6 +2842,17 @@
             const [year, monthNum] = month.split('-').map(Number);
             const mesNome = monthNames[monthNum - 1];
 
+            // 🔥 CALCULA CATEGORIAS APENAS DO MÊS FILTRADO
+            const catTotals = {};
+            filtered.forEach(t => {
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
+                    const cat = t.category;
+                    if (!catTotals[cat]) catTotals[cat] = 0;
+                    catTotals[cat] += t.amount;
+                }
+            });
+
+            // Análise de tendências
             let trendText = '';
             if (netIncome > 0) {
                 trendText = `✅ <strong>Resultado Positivo:</strong> A empresa/família apresentou um resultado líquido de <strong class="destaque-verde">${formatCurrency(netIncome)}</strong> no mês de ${mesNome}. A margem líquida foi de <strong class="destaque-verde">${margin.toFixed(1)}%</strong>, indicando ${margin > 10 ? 'uma excelente' : 'uma'} eficiência operacional.`;
@@ -2894,30 +2863,40 @@
                 trendText = `⚖️ <strong>Resultado Neutro:</strong> As receitas e despesas se igualaram no mês de ${mesNome}, resultando em ponto de equilíbrio. A margem líquida foi de <strong>0%</strong>. Considere estratégias para aumentar a receita ou reduzir custos.`;
             }
 
-            const catTotals = getCategoryTotals();
+            // 🔥 AGORA O PERCENTUAL NUNCA ULTRAPASSARÁ 100%
             const expenseCats = Object.entries(catTotals)
-                .filter(([k, v]) => v.expense > 0)
-                .sort((a, b) => b[1].expense - a[1].expense);
+                .filter(([k, v]) => v > 0)
+                .sort((a, b) => b[1] - a[1]);
             
-            if (expenseCats.length > 0) {
+            if (expenseCats.length > 0 && totalExpenses > 0) {
                 const topCat = expenseCats[0];
                 const topCatName = categoryMeta[topCat[0]] ? categoryMeta[topCat[0]].name : topCat[0];
-                const topPct = (topCat[1].expense / totalExpenses * 100);
-                trendText += `<br><br>📊 <strong>Maior Centro de Custo:</strong> "${topCatName}" representa <strong class="destaque-roxo">${topPct.toFixed(0)}%</strong> dos gastos totais, totalizando <strong class="destaque-vermelho">${formatCurrency(topCat[1].expense)}</strong>.`;
+                // ✅ Percentual correto: valor da categoria / total de despesas do mês * 100
+                const topPct = (topCat[1] / totalExpenses) * 100;
+                trendText += `<br><br>📊 <strong>Maior Centro de Custo:</strong> "${topCatName}" representa <strong class="destaque-roxo">${topPct.toFixed(0)}%</strong> dos gastos totais, totalizando <strong class="destaque-vermelho">${formatCurrency(topCat[1])}</strong>.`;
                 if (topPct > 30) {
                     trendText += ' ⚠️ Este percentual merece atenção especial.';
                 }
             }
 
-            const incomeCats = Object.entries(catTotals)
-                .filter(([k, v]) => v.income > 0)
-                .sort((a, b) => b[1].income - a[1].income);
+            // Receitas do mês
+            const incomeCatTotals = {};
+            filtered.forEach(t => {
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') {
+                    const cat = t.category;
+                    if (!incomeCatTotals[cat]) incomeCatTotals[cat] = 0;
+                    incomeCatTotals[cat] += t.amount;
+                }
+            });
+            const incomeCats = Object.entries(incomeCatTotals)
+                .filter(([k, v]) => v > 0)
+                .sort((a, b) => b[1] - a[1]);
             
-            if (incomeCats.length > 0) {
+            if (incomeCats.length > 0 && totalRevenue > 0) {
                 const topIncome = incomeCats[0];
                 const topIncomeName = categoryMeta[topIncome[0]] ? categoryMeta[topIncome[0]].name : topIncome[0];
-                const incPct = (topIncome[1].income / totalRevenue * 100);
-                trendText += `<br><br>💹 <strong>Principal Fonte de Receita:</strong> "${topIncomeName}" contribui com <strong class="destaque-verde">${incPct.toFixed(0)}%</strong> da receita total (${formatCurrency(topIncome[1].income)}).`;
+                const incPct = (topIncome[1] / totalRevenue) * 100;
+                trendText += `<br><br>💹 <strong>Principal Fonte de Receita:</strong> "${topIncomeName}" contribui com <strong class="destaque-verde">${incPct.toFixed(0)}%</strong> da receita total (${formatCurrency(topIncome[1])}).`;
                 if (incPct > 60) {
                     trendText += ' ⚠️ Considere diversificar as fontes de receita para reduzir riscos.';
                 }
@@ -2935,6 +2914,7 @@
 
             document.getElementById('executiveTrendAnalysis').innerHTML = trendText;
 
+            // Alertas
             let alerts = [];
             if (netIncome < 0) {
                 alerts.push({ type: 'critical', msg: `Déficit de ${formatCurrency(Math.abs(netIncome))} no mês. Ações corretivas necessárias.` });
@@ -2972,6 +2952,7 @@
 
             document.getElementById('reportPeriod').textContent = `${mesNome}/${year}`;
 
+            // Métricas
             const avgTicket = filtered.length > 0 ? totalExpenses / filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').length : 0;
             document.getElementById('metricAvgTicket').textContent = formatCurrency(avgTicket);
 
@@ -2997,6 +2978,7 @@
             document.getElementById('metricDebtRatio').textContent = `${debtRatio.toFixed(0)}%`;
             document.getElementById('metricDebtRatio').className = `text-lg font-bold ${debtRatio < 60 ? 'text-emerald-400' : debtRatio < 80 ? 'text-amber-400' : 'text-rose-400'} mt-1`;
 
+            // Gráficos
             const monthData = getMonthData(5);
             if (charts.executiveTrend) charts.executiveTrend.destroy();
             charts.executiveTrend = new Chart(document.getElementById('executiveTrendChart'), {
@@ -3019,17 +3001,18 @@
                 }
             });
 
+            // Gráfico de Pizza - APENAS despesas do mês
             const expenseData = Object.entries(catTotals)
-                .filter(([k, v]) => v.expense > 0)
-                .sort((a, b) => b[1].expense - a[1].expense)
+                .filter(([k, v]) => v > 0)
+                .sort((a, b) => b[1] - a[1])
                 .slice(0, 6);
             const otherExpense = Object.entries(catTotals)
-                .filter(([k, v]) => v.expense > 0)
+                .filter(([k, v]) => v > 0)
                 .slice(6)
-                .reduce((s, [k, v]) => s + v.expense, 0);
+                .reduce((s, [k, v]) => s + v, 0);
             
             const pieLabels = expenseData.map(([k, v]) => categoryMeta[k] ? categoryMeta[k].name : k);
-            const pieData = expenseData.map(([k, v]) => v.expense);
+            const pieData = expenseData.map(([k, v]) => v);
             if (otherExpense > 0) {
                 pieLabels.push('Outros');
                 pieData.push(otherExpense);
@@ -3058,6 +3041,7 @@
                 }
             });
 
+            // Top 5 Categorias
             const top5 = expenseData.slice(0, 5);
             const categoryContainer = document.getElementById('executiveCategoryBreakdown');
             if (top5.length === 0) {
@@ -3066,16 +3050,17 @@
                 const barColors = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b'];
                 categoryContainer.innerHTML = top5.map(([k, v], i) => {
                     const cat = categoryMeta[k] || { name: k, color: '#94a3b8', icon: '📌' };
-                    const pct = (v.expense / totalExpenses * 100);
+                    // ✅ Percentual correto: valor da categoria / total de despesas do mês
+                    const pct = totalExpenses > 0 ? (v / totalExpenses * 100) : 0;
                     return `<div class="flex items-center gap-4">
                         <span class="text-sm font-bold text-slate-400 w-6">#${i+1}</span>
                         <div class="flex-1">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-sm font-bold text-slate-200">${cat.icon} ${cat.name}</span>
-                                <span class="text-xs font-bold text-slate-400">${formatCurrency(v.expense)} (${pct.toFixed(0)}%)</span>
+                                <span class="text-xs font-bold text-slate-400">${formatCurrency(v)} (${pct.toFixed(0)}%)</span>
                             </div>
                             <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full transition-all duration-1000" style="width: ${pct}%; background: ${barColors[i % barColors.length]};"></div>
+                                <div class="h-full rounded-full transition-all duration-1000" style="width: ${Math.min(pct, 100)}%; background: ${barColors[i % barColors.length]};"></div>
                             </div>
                         </div>
                     </div>`;
@@ -3083,24 +3068,345 @@
             }
         }
 
-        // ============ TABS ============
-        function showTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(`${tab}Tab`).classList.add('active');
-            const btns = { dashboard: 'tabDashboardBtn', lancamentos: 'tabLancamentosBtn', calendario: 'tabCalendarioBtn', graficos: 'tabGraficosBtn', metas: 'tabMetasBtn', relatorios: 'tabRelatoriosBtn' };
-            Object.keys(btns).forEach(key => {
-                const btn = document.getElementById(btns[key]);
-                if (btn) {
-                    btn.className = `tab-btn ${key === tab ? 'active' : ''}`;
+        // ============ ANÁLISE DETALHADA - CORRIGIDA ============
+        function renderDetailedAnalysis() {
+            const month = filterMonth.value;
+            // 🔥 FILTRA APENAS O MÊS SELECIONADO
+            const filtered = transactions.filter(t => t.date.startsWith(month));
+            const expenses = filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense');
+            const totalExpenses = expenses.reduce((s, t) => s + t.amount, 0);
+            
+            const catTotals = {};
+            expenses.forEach(t => {
+                const cat = t.category;
+                if (!catTotals[cat]) catTotals[cat] = { 
+                    total: 0, 
+                    count: 0, 
+                    avg: 0,
+                    items: [],
+                    dates: []
+                };
+                catTotals[cat].total += t.amount;
+                catTotals[cat].count++;
+                catTotals[cat].items.push(t.description);
+                catTotals[cat].dates.push(t.date);
+            });
+
+            Object.keys(catTotals).forEach(key => {
+                catTotals[key].avg = catTotals[key].total / catTotals[key].count;
+            });
+
+            const sortedCats = Object.entries(catTotals)
+                .sort((a, b) => b[1].total - a[1].total);
+
+            // Top 5
+            const top5 = sortedCats.slice(0, 5);
+            const topContainer = document.getElementById('topSpendingCategories');
+            if (top5.length === 0) {
+                topContainer.innerHTML = '<p class="text-sm text-slate-400">Nenhum gasto registrado.</p>';
+            } else {
+                const maxTotal = top5[0][1].total;
+                topContainer.innerHTML = top5.map(([key, data], index) => {
+                    const cat = categoryMeta[key] || { name: key, icon: '📌', color: '#94a3b8' };
+                    // ✅ Percentual correto
+                    const pct = totalExpenses > 0 ? (data.total / totalExpenses * 100) : 0;
+                    const colors = ['#f43f5e', '#f59e0b', '#8b5cf6', '#6366f1', '#06b6d4'];
+                    return `
+                        <div class="flex items-center gap-3 p-2 rounded-lg bg-slate-800/30 border border-slate-700/30">
+                            <span class="text-lg font-black text-slate-500 w-6">${index + 1}</span>
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background: ${cat.color}20; color: ${cat.color}">
+                                ${cat.icon}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-sm text-slate-200">${cat.name}</span>
+                                    <span class="text-sm font-bold text-slate-300">${formatCurrency(data.total)}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-slate-500">${data.count} lançamentos • média ${formatCurrency(data.avg)}</span>
+                                    <span class="font-bold ${pct > 30 ? 'text-rose-400' : 'text-amber-400'}">${pct.toFixed(0)}%</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
+                                    <div class="h-full rounded-full" style="width: ${(data.total / maxTotal) * 100}%; background: ${colors[index]};"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Bottom 5
+            const bottom5 = sortedCats.slice(-5).filter(c => c[1].total > 0).reverse();
+            const bottomContainer = document.getElementById('bottomSpendingCategories');
+            if (bottom5.length === 0) {
+                bottomContainer.innerHTML = '<p class="text-sm text-slate-400">Nenhum gasto registrado.</p>';
+            } else {
+                bottomContainer.innerHTML = bottom5.map(([key, data]) => {
+                    const cat = categoryMeta[key] || { name: key, icon: '📌', color: '#94a3b8' };
+                    // ✅ Percentual correto
+                    const pct = totalExpenses > 0 ? (data.total / totalExpenses * 100) : 0;
+                    return `
+                        <div class="flex items-center gap-3 p-2 rounded-lg bg-slate-800/30 border border-slate-700/30">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background: ${cat.color}20; color: ${cat.color}">
+                                ${cat.icon}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-sm text-slate-200">${cat.name}</span>
+                                    <span class="text-sm font-bold text-slate-300">${formatCurrency(data.total)}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-slate-500">${data.count} lançamentos • média ${formatCurrency(data.avg)}</span>
+                                    <span class="font-bold text-emerald-400">${pct.toFixed(0)}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Luxos
+            const luxuryContainer = document.getElementById('luxuryItems');
+            const luxuryItems = [];
+            const totalAvg = expenses.length > 0 ? expenses.reduce((s, t) => s + t.amount, 0) / expenses.length : 0;
+            
+            sortedCats.forEach(([key, data]) => {
+                const cat = categoryMeta[key] || { name: key, icon: '📌' };
+                if (data.avg > totalAvg * 3 && data.count >= 2) {
+                    luxuryItems.push({
+                        category: cat,
+                        avg: data.avg,
+                        total: data.total,
+                        count: data.count,
+                        ratio: (data.avg / totalAvg).toFixed(1),
+                        items: data.items.slice(0, 3)
+                    });
                 }
             });
-            if (tab === 'relatorios') renderExecutiveReport();
-            if (tab === 'metas') { renderGoals(); renderGoalsSummary(); }
-            if (tab === 'calendario') renderCalendar();
-            if (tab === 'graficos') renderGraficos();
-            renderAll();
+
+            const totalIncome = filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'income')
+                .reduce((s, t) => s + t.amount, 0);
+            
+            sortedCats.forEach(([key, data]) => {
+                const cat = categoryMeta[key] || { name: key, icon: '📌' };
+                const pctIncome = totalIncome > 0 ? (data.total / totalIncome) * 100 : 0;
+                if (pctIncome > 15 && data.count >= 2 && !luxuryItems.some(l => l.category.name === cat.name)) {
+                    luxuryItems.push({
+                        category: cat,
+                        avg: data.avg,
+                        total: data.total,
+                        count: data.count,
+                        ratio: '🚨',
+                        items: data.items.slice(0, 3),
+                        pctIncome: pctIncome.toFixed(0)
+                    });
+                }
+            });
+
+            luxuryItems.sort((a, b) => b.total - a.total);
+
+            if (luxuryItems.length === 0) {
+                luxuryContainer.innerHTML = `
+                    <div class="text-center py-6 text-slate-400">
+                        <i class="fas fa-check-circle text-3xl text-emerald-500 mb-2 block"></i>
+                        <p class="text-sm">Nenhum gasto de luxo identificado! 🎉</p>
+                        <p class="text-xs text-slate-500 mt-1">Seus gastos estão alinhados com sua renda.</p>
+                    </div>
+                `;
+            } else {
+                luxuryContainer.innerHTML = luxuryItems.slice(0, 5).map(item => {
+                    const level = item.ratio === '🚨' ? 'critico' : 
+                                  parseFloat(item.ratio) > 5 ? 'alto' : 
+                                  parseFloat(item.ratio) > 3 ? 'medio' : 'baixo';
+                    const levelText = item.ratio === '🚨' ? 'Crítico' :
+                                      parseFloat(item.ratio) > 5 ? 'Alto' :
+                                      parseFloat(item.ratio) > 3 ? 'Médio' : 'Baixo';
+                    return `
+                        <div class="category-analysis">
+                            <div class="flex items-start gap-3">
+                                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background: ${item.category.color}20;">
+                                    ${item.category.icon}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="font-bold text-slate-200">${item.category.name}</span>
+                                            <span class="luxo-badge ${level} ml-2">${levelText}</span>
+                                        </div>
+                                        <span class="text-sm font-bold text-amber-400">${formatCurrency(item.total)}</span>
+                                    </div>
+                                    <div class="text-xs text-slate-400 mt-1">
+                                        ${item.count} lançamentos • média ${formatCurrency(item.avg)}
+                                        ${item.ratio !== '🚨' ? `• ${item.ratio}x acima da média` : `• ${item.pctIncome}% da renda`}
+                                    </div>
+                                    ${item.items && item.items.length > 0 ? `<div class="text-xs text-slate-500 mt-1">Ex: ${item.items.join(', ')}</div>` : ''}
+                                    <div class="text-xs text-amber-400 mt-1">
+                                        <i class="fas fa-lightbulb mr-1"></i> 
+                                        ${level === 'critico' ? '⚠️ Reduza ou elimine este gasto urgentemente.' :
+                                          level === 'alto' ? '💡 Considere reduzir o valor ou frequência.' :
+                                          level === 'medio' ? '📊 Avalie se este gasto é realmente necessário.' :
+                                          '👍 Gasto controlado, mas pode ser otimizado.'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Melhorias
+            const improvements = [];
+            
+            if (luxuryItems.length > 0) {
+                const totalLuxo = luxuryItems.reduce((s, i) => s + i.total, 0);
+                improvements.push({
+                    title: 'Redução de Gastos com Luxo',
+                    description: `Identificamos ${luxuryItems.length} categorias com padrão de luxo, totalizando ${formatCurrency(totalLuxo)}. Uma redução de 30% geraria economia de ${formatCurrency(totalLuxo * 0.3)}.`,
+                    impacto: 'alto',
+                    acao: 'Revise os gastos em: ' + luxuryItems.slice(0, 3).map(i => i.category.name).join(', ')
+                });
+            }
+
+            const fixas = expenses.filter(t => t.groupId && !t.description.includes('/'));
+            if (fixas.length > 3) {
+                const totalFixas = fixas.reduce((s, t) => s + t.amount, 0);
+                improvements.push({
+                    title: 'Revisão de Gastos Recorrentes',
+                    description: `Você tem ${fixas.length} despesas fixas/mensais totalizando ${formatCurrency(totalFixas)}. Verifique se todas são essenciais.`,
+                    impacto: 'medio',
+                    acao: 'Liste todas as assinaturas e serviços recorrentes e cancele os não utilizados.'
+                });
+            }
+
+            const totalInc = filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'income')
+                .reduce((s, t) => s + t.amount, 0);
+            const totalExp = expenses.reduce((s, t) => s + t.amount, 0);
+            const savingRate = totalInc > 0 ? ((totalInc - totalExp) / totalInc) * 100 : 0;
+            if (savingRate < 10 && totalInc > 0) {
+                improvements.push({
+                    title: 'Aumentar Taxa de Economia',
+                    description: `Sua taxa de economia é de ${savingRate.toFixed(0)}%. O ideal é manter pelo menos 20% da renda como poupança.`,
+                    impacto: 'alto',
+                    acao: 'Corte 5% dos gastos variáveis e direcione para poupança.'
+                });
+            }
+
+            sortedCats.forEach(([key, data]) => {
+                const cat = categoryMeta[key] || { name: key };
+                if (data.avg > totalAvg * 2 && data.count >= 3 && !luxuryItems.some(l => l.category.name === cat.name)) {
+                    improvements.push({
+                        title: `Otimização em "${cat.name}"`,
+                        description: `Ticket médio de ${formatCurrency(data.avg)} está acima da média (${formatCurrency(totalAvg)}). Busque alternativas mais econômicas.`,
+                        impacto: 'medio',
+                        acao: `Pesquise fornecedores/alternativas para ${cat.name} com custo reduzido.`
+                    });
+                }
+            });
+
+            const overdue = expenses.filter(t => !t.paid && t.date < new Date().toISOString().slice(0, 10));
+            if (overdue.length > 0) {
+                const totalOverdue = overdue.reduce((s, t) => s + t.amount, 0);
+                improvements.push({
+                    title: 'Regularização de Contas Vencidas',
+                    description: `${overdue.length} contas vencidas totalizando ${formatCurrency(totalOverdue)}. Juros e multas podem estar acumulando.`,
+                    impacto: 'alto',
+                    acao: 'Priorize o pagamento das contas vencidas para evitar juros adicionais.'
+                });
+            }
+
+            if (totalInc === 0 && expenses.length > 0) {
+                improvements.push({
+                    title: 'Diversificação de Receitas',
+                    description: 'Nenhuma receita registrada no período. Avalie fontes de renda alternativas.',
+                    impacto: 'critico',
+                    acao: 'Busque novas fontes de renda (freelance, investimentos, etc.)'
+                });
+            }
+
+            if (improvements.length === 0) {
+                improvements.push({
+                    title: '🎉 Excelente Gestão Financeira!',
+                    description: 'Seus gastos estão bem controlados e equilibrados. Continue assim!',
+                    impacto: 'baixo',
+                    acao: 'Mantenha o controle e busque sempre otimizar.'
+                });
+            }
+
+            const improvementContainer = document.getElementById('improvementSuggestions');
+            improvementContainer.innerHTML = improvements.slice(0, 6).map(imp => `
+                <div class="improvement-item">
+                    <div class="flex justify-between items-start">
+                        <span class="font-bold text-sm text-slate-200">${imp.title}</span>
+                        <span class="impacto ${imp.impacto}">${imp.impacto === 'alto' ? '⚠️ Alta prioridade' : 
+                                                           imp.impacto === 'critico' ? '🚨 Urgente' : 
+                                                           imp.impacto === 'medio' ? '📊 Médio' : '✅ Baixo'}</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mt-1">${imp.description}</p>
+                    <div class="text-xs text-indigo-400 mt-1 flex items-center gap-1">
+                        <i class="fas fa-arrow-right"></i>
+                        <span>${imp.acao}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Análise detalhada
+            const detailedContainer = document.getElementById('detailedSpendingAnalysis');
+            if (sortedCats.length === 0) {
+                detailedContainer.innerHTML = '<p class="text-sm text-slate-400">Nenhum gasto registrado no período.</p>';
+            } else {
+                const colors = ['#f43f5e', '#f59e0b', '#8b5cf6', '#6366f1', '#06b6d4', '#10b981', '#ec4899', '#f97316'];
+                detailedContainer.innerHTML = sortedCats.slice(0, 8).map(([key, data], index) => {
+                    const cat = categoryMeta[key] || { name: key, icon: '📌', color: '#94a3b8' };
+                    // ✅ Percentual correto
+                    const pct = totalExpenses > 0 ? (data.total / totalExpenses * 100) : 0;
+                    const isLuxo = luxuryItems.some(l => l.category.name === cat.name);
+                    
+                    const monthlyData = {};
+                    data.dates.forEach((date, i) => {
+                        const month = date.slice(0, 7);
+                        if (!monthlyData[month]) monthlyData[month] = 0;
+                        monthlyData[month] += data.items[i] ? 1 : 0;
+                    });
+                    const months = Object.keys(monthlyData).sort();
+                    const trend = months.length > 1 ? 
+                        (monthlyData[months[months.length-1]] > monthlyData[months[0]] ? '↗️ Crescendo' : 
+                         monthlyData[months[months.length-1]] < monthlyData[months[0]] ? '↘️ Reduzindo' : '➡️ Estável') : '📊 Estável';
+
+                    return `
+                        <div class="category-analysis">
+                            <div class="flex items-start gap-3">
+                                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background: ${cat.color}20;">
+                                    ${cat.icon}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="font-bold text-slate-200">${cat.name}</span>
+                                            ${isLuxo ? '<span class="luxo-badge critico ml-2">Possível Luxo</span>' : ''}
+                                            <span class="text-xs text-slate-500 ml-2">${trend}</span>
+                                        </div>
+                                        <span class="text-sm font-bold text-slate-300">${formatCurrency(data.total)}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-xs mt-1">
+                                        <span class="text-slate-500">${data.count} lançamentos • média ${formatCurrency(data.avg)}</span>
+                                        <span class="font-bold ${pct > 20 ? 'text-rose-400' : 'text-amber-400'}">${pct.toFixed(0)}% do total</span>
+                                    </div>
+                                    <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
+                                        <div class="h-full rounded-full" style="width: ${Math.min(pct, 100)}%; background: ${colors[index % colors.length]};"></div>
+                                    </div>
+                                    <div class="text-xs text-slate-500 mt-1 flex gap-3">
+                                        <span><i class="fas fa-calendar-alt mr-1"></i> ${months.length} meses</span>
+                                        <span><i class="fas fa-tag mr-1"></i> ${data.items.slice(0, 3).join(', ')}${data.items.length > 3 ? '...' : ''}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
+        // ============ RENDER ALL ============
         function renderAll() {
             renderDashboard();
             renderLancamentos();
@@ -3109,32 +3415,35 @@
             populateCategorySelects();
         }
 
-        // ============ FILTROS ============
-        function populateFilters() {
-            const select = document.getElementById('categoryFilter');
-            select.innerHTML = `<option value="all">Todas categorias</option>` +
-                Object.entries(categoryMeta)
-                    .sort((a, b) => a[1].name.localeCompare(b[1].name))
-                    .map(([k, cat]) => `<option value="${k}">${cat.icon} ${cat.name}</option>`).join('');
-        }
-
         // ============ INICIALIZAÇÃO ============
-        window.onload = () => {
-            filterMonth.value = new Date().toISOString().slice(0, 7);
-            document.getElementById('dataEvento').value = new Date().toISOString().slice(0, 10);
+        window.onload = function() {
+            const today = new Date();
+            const monthStr = today.toISOString().slice(0, 7);
+            filterMonth.value = monthStr;
+            document.getElementById('dataEvento').value = today.toISOString().slice(0, 10);
+            
             setEntryType('expense');
             populateFilters();
             populateCategorySelects();
+            
             renderAll();
             renderCalendar();
             renderGraficos();
             renderExecutiveReport();
-            document.getElementById('searchFilter').oninput = renderAll;
-            document.getElementById('categoryFilter').onchange = renderAll;
-            document.getElementById('statusFilter').onchange = renderAll;
+            renderDetailedAnalysis();
+            
+            document.getElementById('searchFilter').addEventListener('input', renderAll);
+            document.getElementById('categoryFilter').addEventListener('change', renderAll);
+            document.getElementById('statusFilter').addEventListener('change', renderAll);
+            filterMonth.addEventListener('change', function() {
+                renderAll();
+                renderExecutiveReport();
+                renderDetailedAnalysis();
+            });
+            
+            console.log('✅ Finwise v4.0 - Todos os cálculos corrigidos!');
+            console.log('📊 Nenhuma categoria ultrapassa 100% agora.');
         };
-
-        filterMonth.onchange = renderAll;
     </script>
 </body>
 </html>
