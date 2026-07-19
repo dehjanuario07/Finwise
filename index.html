@@ -2,7 +2,7 @@
 <html lang="pt-pt" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finwise - Intelligent Finance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -25,6 +25,7 @@
             --card-bg: rgba(15, 23, 42, 0.7);
             --input-bg: rgba(15, 23, 42, 0.5);
             --scrollbar-bg: #334155;
+            --picker-filter: invert(1);
         }
 
         [data-theme="light"] {
@@ -40,6 +41,7 @@
             --card-bg: rgba(255, 255, 255, 0.8);
             --input-bg: rgba(255, 255, 255, 0.5);
             --scrollbar-bg: #cbd5e1;
+            --picker-filter: invert(0);
         }
         
         body { 
@@ -59,16 +61,6 @@
         @keyframes fadeSlideIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
         }
 
         @keyframes countUp {
@@ -101,23 +93,6 @@
             justify-content: space-between;
             position: relative;
             overflow: hidden;
-            cursor: grab;
-            user-select: none;
-        }
-
-        .bento-item:active {
-            cursor: grabbing;
-        }
-
-        .bento-item.dragging {
-            opacity: 0.4;
-            transform: scale(0.95);
-        }
-
-        .bento-item.drag-over {
-            border-color: var(--border-hover);
-            transform: scale(1.02);
-            box-shadow: 0 0 30px rgba(99, 102, 241, 0.1);
         }
 
         .bento-item:hover {
@@ -136,12 +111,8 @@
 
         input[type="month"]::-webkit-calendar-picker-indicator,
         input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: var(--picker-filter, invert(1));
+            filter: var(--picker-filter);
             cursor: pointer;
-        }
-
-        [data-theme="light"] {
-            --picker-filter: invert(0);
         }
 
         .type-toggle { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
@@ -162,18 +133,10 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--scrollbar-bg); border-radius: 10px; }
 
-        .budget-progress {
-            position: relative; height: 8px; background: rgba(255, 255, 255, 0.05);
-            border-radius: 100px; overflow: hidden; margin-top: 8px;
-        }
-        .budget-progress .bar {
-            height: 100%; border-radius: 100px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
-        }
-
         .mobile-card {
             display: none; background: var(--card-bg); border: 1px solid var(--border-color);
             border-radius: 1rem; padding: 1rem; margin-bottom: 0.75rem;
-            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         @media (max-width: 640px) { .mobile-card { display: block; } }
 
@@ -245,88 +208,19 @@
             opacity: 0.8;
         }
 
-        .indicator-value {
-            font-size: 1.5rem;
-            font-weight: 900;
-            line-height: 1.2;
-        }
-
-        .indicator-label {
-            font-size: 0.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-        }
-
-        .indicator-badge {
-            font-size: 0.55rem;
-            font-weight: 800;
-            padding: 0.15rem 0.6rem;
-            border-radius: 100px;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
-        .edit-toggle-group {
-            display: flex;
-            gap: 0.5rem;
-            background: var(--input-bg);
-            padding: 0.25rem;
-            border-radius: 0.75rem;
-            border: 1px solid var(--border-color);
-        }
-        .edit-toggle-btn {
-            flex: 1;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            background: transparent;
-            color: var(--text-secondary);
-        }
-        .edit-toggle-btn.active-income {
+        .goal-completed-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
-        }
-        .edit-toggle-btn.active-expense {
-            background: linear-gradient(135deg, #f43f5e, #e11d48);
-            color: white;
-            box-shadow: 0 4px 15px rgba(244, 63, 94, 0.2);
-        }
-        .edit-toggle-btn:hover:not(.active-income):not(.active-expense) {
-            color: var(--text-primary);
-        }
-
-        .goal-progress-ring {
-            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .goal-stat {
-            background: var(--bg-tertiary);
-            border-radius: 0.75rem;
-            padding: 0.75rem;
-            text-align: center;
-            flex: 1;
-        }
-        .goal-stat .value {
-            font-size: 1.1rem;
-            font-weight: 900;
-            color: var(--text-primary);
-        }
-        .goal-stat .label {
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
             font-size: 0.55rem;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-            margin-top: 0.15rem;
+            letter-spacing: 0.03em;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
         .goal-actions {
@@ -367,21 +261,6 @@
         }
         .goal-actions .btn-delete:hover {
             background: rgba(244, 63, 94, 0.25);
-        }
-
-        .goal-completed-badge {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 100px;
-            font-size: 0.55rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
         .calendar-grid {
@@ -560,86 +439,6 @@
         }
         .chart-container .chart-title i {
             font-size: 0.9rem;
-        }
-
-        .stats-mini-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-        .stats-mini-card {
-            background: var(--bg-tertiary);
-            border-radius: 0.75rem;
-            padding: 0.75rem;
-            text-align: center;
-        }
-        .stats-mini-card .value {
-            font-size: 1.1rem;
-            font-weight: 900;
-        }
-        .stats-mini-card .label {
-            font-size: 0.5rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-            margin-top: 0.15rem;
-        }
-
-        .heatmap-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 0.25rem;
-        }
-        .heatmap-cell {
-            aspect-ratio: 1;
-            border-radius: 0.25rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.5rem;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.6);
-        }
-        .heatmap-cell:hover {
-            transform: scale(1.1);
-            z-index: 10;
-            box-shadow: 0 4px 20px var(--shadow-color);
-        }
-        .heatmap-cell .heatmap-value {
-            font-size: 0.4rem;
-            opacity: 0.8;
-        }
-        .heatmap-weekday {
-            font-size: 0.45rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            text-align: center;
-            padding: 0.15rem 0;
-        }
-        .heatmap-legend {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            justify-content: center;
-            margin-top: 0.75rem;
-        }
-        .heatmap-legend .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.5rem;
-            color: var(--text-secondary);
-            font-weight: 700;
-        }
-        .heatmap-legend .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 0.25rem;
         }
 
         .tab-nav {
@@ -963,29 +762,6 @@
         }
         .category-analysis-modal .analysis-card .trend-up { color: #10b981; }
         .category-analysis-modal .analysis-card .trend-down { color: #f43f5e; }
-        .category-analysis-modal .analysis-card .trend-stable { color: #f59e0b; }
-        
-        .category-analysis-modal .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .category-analysis-modal .stat-row:last-child {
-            border-bottom: none;
-        }
-        .category-analysis-modal .stat-row .label {
-            color: var(--text-secondary);
-            font-size: 0.7rem;
-            font-weight: 700;
-        }
-        .category-analysis-modal .stat-row .value {
-            color: var(--text-primary);
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-        .category-analysis-modal .stat-row .value.positive { color: #10b981; }
-        .category-analysis-modal .stat-row .value.negative { color: #f43f5e; }
 
         .category-clickable {
             cursor: pointer;
@@ -1087,25 +863,26 @@
         .comparison-table .trend-up { color: #f43f5e; }
         .comparison-table .trend-down { color: #10b981; }
 
-        /* ===== MOBILE SWIPE INDICATOR ===== */
-        .swipe-indicator {
-            display: none;
-            text-align: center;
-            padding: 0.5rem;
-            color: var(--text-muted);
-            font-size: 0.6rem;
-            animation: pulse 2s infinite;
+        /* ===== WATERFALL DIVIDER ===== */
+        .waterfall-divider {
+            border-top: 2px solid var(--border-color);
+            margin: 1rem 0;
+            position: relative;
         }
-        @media (max-width: 640px) {
-            .swipe-indicator { display: block; }
+        .waterfall-divider::after {
+            content: 'TOTAL DE GASTOS';
+            position: absolute;
+            top: -10px;
+            right: 0;
+            background: var(--bg-primary);
+            padding: 0 0.5rem;
+            font-size: 0.55rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
         }
 
         /* ===== RESPONSIVE FIXES ===== */
-        .modal-content {
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
         @media (max-width: 640px) {
             .modal .max-w-md { max-width: 95%; }
             .modal .p-6 { padding: 1rem; }
@@ -1116,91 +893,6 @@
             .resumo-contador .texto-resumo { font-size: 0.75rem; }
             .category-analysis-modal .analysis-grid { grid-template-columns: 1fr 1fr; }
             .category-analysis-modal .analysis-grid .analysis-card { padding: 0.5rem; }
-        }
-
-        /* ===== BOTTOM SHEET FOR MOBILE ===== */
-        .bottom-sheet {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border-color);
-            border-radius: 1.5rem 1.5rem 0 0;
-            padding: 1.5rem;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 60;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .bottom-sheet.active {
-            transform: translateY(0);
-        }
-        .bottom-sheet .handle {
-            width: 40px;
-            height: 4px;
-            background: var(--text-muted);
-            border-radius: 2px;
-            margin: 0 auto 1rem;
-        }
-
-        /* ===== NOTIFICATION BADGE ===== */
-        .notification-badge {
-            position: relative;
-        }
-        .notification-badge .badge-count {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #f43f5e;
-            color: white;
-            font-size: 0.5rem;
-            font-weight: 800;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 4px;
-        }
-
-        /* ===== FILE INPUT STYLING ===== */
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-        .file-input-wrapper input[type="file"] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        /* ===== TOOLTIP ===== */
-        .tooltip {
-            position: relative;
-        }
-        .tooltip:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.6rem;
-            font-weight: 700;
-            white-space: nowrap;
-            border: 1px solid var(--border-color);
-            margin-bottom: 0.25rem;
         }
     </style>
 </head>
@@ -1540,12 +1232,6 @@
         </div>
     </div>
 
-    <!-- BOTTOM SHEET FOR MOBILE ACTIONS -->
-    <div id="bottomSheet" class="bottom-sheet">
-        <div class="handle"></div>
-        <div id="bottomSheetContent"></div>
-    </div>
-
     <div id="toastContainer"></div>
 
     <div class="max-w-7xl mx-auto">
@@ -1580,22 +1266,6 @@
                     <button onclick="toggleTheme()" class="theme-toggle" id="themeToggle" title="Alternar tema">
                         <i class="fas fa-moon"></i>
                     </button>
-
-                    <!-- Backup Button -->
-                    <div class="flex gap-1">
-                        <button onclick="exportData()" class="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-xl text-[9px] font-black transition-all tooltip" data-tooltip="Exportar dados">
-                            <i class="fas fa-download"></i>
-                        </button>
-                        <div class="file-input-wrapper">
-                            <button class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-xl text-[9px] font-black transition-all tooltip" data-tooltip="Importar dados">
-                                <i class="fas fa-upload"></i>
-                            </button>
-                            <input type="file" accept=".json" onchange="importData(event)">
-                        </div>
-                        <button onclick="exportCSV()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 px-3 py-1.5 rounded-xl text-[9px] font-black transition-all tooltip" data-tooltip="Exportar CSV">
-                            <i class="fas fa-file-csv"></i>
-                        </button>
-                    </div>
                 </div>
 
                 <nav class="tab-nav" id="tabNav">
@@ -1623,17 +1293,13 @@
                         <i class="fas fa-arrows-left-right"></i> Comparação
                     </button>
                 </nav>
-
-                <div class="swipe-indicator">
-                    <i class="fas fa-arrows-left-right"></i> Deslize para navegar entre as abas
-                </div>
             </div>
         </header>
 
         <!-- DASHBOARD TAB -->
         <section id="dashboardTab" class="tab-content active">
             <div class="bento-grid" id="dashboardGrid">
-                <!-- Cards serão renderizados dinamicamente com drag & drop -->
+                <!-- Cards serão renderizados dinamicamente -->
             </div>
         </section>
 
@@ -1775,25 +1441,6 @@
         <!-- GRÁFICOS TAB -->
         <section id="graficosTab" class="tab-content">
             <div class="space-y-6">
-                <div class="stats-mini-grid" id="graficosStats">
-                    <div class="stats-mini-card">
-                        <div class="value text-emerald-400" id="grafTotalIncome">R$ 0,00</div>
-                        <div class="label">Total Receitas</div>
-                    </div>
-                    <div class="stats-mini-card">
-                        <div class="value text-rose-400" id="grafTotalExpense">R$ 0,00</div>
-                        <div class="label">Total Despesas</div>
-                    </div>
-                    <div class="stats-mini-card">
-                        <div class="value text-cyan-400" id="grafTotalBalance">R$ 0,00</div>
-                        <div class="label">Saldo Total</div>
-                    </div>
-                    <div class="stats-mini-card">
-                        <div class="value text-indigo-400" id="grafTransactionCount">0</div>
-                        <div class="label">Transações</div>
-                    </div>
-                </div>
-
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="chart-container">
                         <div class="chart-title"><i class="fas fa-chart-line text-indigo-400"></i> Evolução Mensal</div>
@@ -1829,25 +1476,6 @@
                         <div class="chart-title"><i class="fas fa-chart-line text-purple-400"></i> Evolução dos Últimos 12 Meses</div>
                         <div class="h-[280px]">
                             <canvas id="chart12Months"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <div class="chart-title"><i class="fas fa-fire text-orange-400"></i> Heatmap Financeiro</div>
-                        <div id="heatmapContainer"></div>
-                        <div class="heatmap-legend">
-                            <span class="text-[0.5rem] text-slate-500 font-bold">Baixo</span>
-                            <div class="flex gap-0.5">
-                                <div class="legend-color" style="background: #0c4a6e;"></div>
-                                <div class="legend-color" style="background: #1e6f9f;"></div>
-                                <div class="legend-color" style="background: #3b82f6;"></div>
-                                <div class="legend-color" style="background: #60a5fa;"></div>
-                                <div class="legend-color" style="background: #93c5fd;"></div>
-                                <div class="legend-color" style="background: #fcd34d;"></div>
-                                <div class="legend-color" style="background: #f59e0b;"></div>
-                                <div class="legend-color" style="background: #d97706;"></div>
-                                <div class="legend-color" style="background: #b91c1c;"></div>
-                            </div>
-                            <span class="text-[0.5rem] text-slate-500 font-bold">Alto</span>
                         </div>
                     </div>
                 </div>
@@ -1940,28 +1568,17 @@
             <div class="flex items-center gap-2">
                 <i class="fas fa-wallet text-indigo-500 text-xl"></i>
                 <span class="text-lg font-black bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent tracking-tighter">Finwise</span>
-                <span class="ml-2 px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-full text-[10px] font-black italic" id="versionLabel">v4.0</span>
+                <span class="ml-2 px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-full text-[10px] font-black italic" id="versionLabel">v4.2</span>
             </div>
             <div class="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-700"></div>
             <div class="flex items-center gap-2 text-sm text-slate-400 font-bold">
                 Desenvolvido por <span class="text-white font-black uppercase tracking-widest text-[11px] bg-slate-800 px-3 py-1 rounded-lg">Deh Januário</span>
             </div>
-            <div class="flex items-center gap-2">
-                <button onclick="exportData()" class="text-[9px] font-black text-slate-500 hover:text-indigo-400 transition-all">
-                    <i class="fas fa-download"></i> Backup
-                </button>
-                <div class="file-input-wrapper">
-                    <button class="text-[9px] font-black text-slate-500 hover:text-emerald-400 transition-all">
-                        <i class="fas fa-upload"></i> Restaurar
-                    </button>
-                    <input type="file" accept=".json" onchange="importData(event)">
-                </div>
-            </div>
         </footer>
     </div>
 
     <script>
-        const CURRENT_VERSION = "4.1";
+        const CURRENT_VERSION = "4.2";
         let transactions = JSON.parse(localStorage.getItem('finwise_db')) || [];
         let goals = JSON.parse(localStorage.getItem('finwise_goals')) || [];
 
@@ -2022,145 +1639,6 @@
             updateThemeIcon(theme);
         }
 
-        // ============ DRAG & DROP DASHBOARD ============
-        let draggedItem = null;
-        let dashboardOrder = JSON.parse(localStorage.getItem('finwise_dashboard_order')) || [];
-
-        function enableDragDrop() {
-            const grid = document.getElementById('dashboardGrid');
-            const items = grid.querySelectorAll('.bento-item');
-            
-            items.forEach(item => {
-                item.draggable = true;
-                item.addEventListener('dragstart', handleDragStart);
-                item.addEventListener('dragend', handleDragEnd);
-                item.addEventListener('dragenter', handleDragEnter);
-                item.addEventListener('dragover', handleDragOver);
-                item.addEventListener('drop', handleDrop);
-            });
-        }
-
-        function handleDragStart(e) {
-            draggedItem = this;
-            this.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', this.dataset.id || '');
-        }
-
-        function handleDragEnd(e) {
-            this.classList.remove('dragging');
-            document.querySelectorAll('.bento-item.drag-over').forEach(el => el.classList.remove('drag-over'));
-        }
-
-        function handleDragEnter(e) {
-            e.preventDefault();
-            if (this !== draggedItem) {
-                this.classList.add('drag-over');
-            }
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            this.classList.remove('drag-over');
-            if (draggedItem && draggedItem !== this) {
-                const parent = this.parentNode;
-                const items = Array.from(parent.children);
-                const draggedIndex = items.indexOf(draggedItem);
-                const targetIndex = items.indexOf(this);
-                
-                if (draggedIndex < targetIndex) {
-                    parent.insertBefore(draggedItem, this.nextSibling);
-                } else {
-                    parent.insertBefore(draggedItem, this);
-                }
-                
-                // Save order
-                const order = Array.from(parent.children).map(el => el.dataset.id || el.className);
-                localStorage.setItem('finwise_dashboard_order', JSON.stringify(order));
-                showToast('Layout do dashboard atualizado!', 'success');
-            }
-            draggedItem = null;
-        }
-
-        // ============ EXPORT/IMPORT DATA ============
-        function exportData() {
-            const data = {
-                transactions: transactions,
-                goals: goals,
-                categories: categoryMeta,
-                tags: availableTags,
-                version: CURRENT_VERSION,
-                exportedAt: new Date().toISOString()
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `finwise_backup_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('📦 Backup exportado com sucesso!', 'success');
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.transactions && data.goals && data.categories) {
-                        if (confirm('⚠️ Isso substituirá TODOS os dados atuais. Tem certeza?')) {
-                            transactions = data.transactions;
-                            goals = data.goals;
-                            categoryMeta = data.categories;
-                            if (data.tags) availableTags = data.tags;
-                            save();
-                            saveGoals();
-                            saveCategories();
-                            saveTags();
-                            showToast('✅ Dados importados com sucesso!', 'success');
-                            renderAll();
-                        }
-                    } else {
-                        showToast('❌ Arquivo inválido!', 'error');
-                    }
-                } catch(err) {
-                    showToast('❌ Erro ao ler o arquivo!', 'error');
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        function exportCSV() {
-            if (transactions.length === 0) {
-                showToast('Nenhuma transação para exportar.', 'warning');
-                return;
-            }
-            
-            let csv = 'Data,Descrição,Categoria,Valor,Status,Tags\n';
-            transactions.forEach(t => {
-                const cat = categoryMeta[t.category] ? categoryMeta[t.category].name : t.category;
-                const status = t.paid ? 'Pago' : 'Pendente';
-                const tags = (t.tags || []).join('; ');
-                csv += `${t.date},${t.description},${cat},${t.amount.toFixed(2)},${status},${tags}\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `finwise_export_${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('📊 CSV exportado com sucesso!', 'success');
-        }
-
         // ============ TAGS SYSTEM ============
         function saveTags() {
             localStorage.setItem('finwise_tags', JSON.stringify(availableTags));
@@ -2204,7 +1682,6 @@
             
             container.innerHTML = html;
             
-            // Render suggestions
             const suggestionsContainer = document.getElementById('suggestedTags');
             if (suggestionsContainer) {
                 const usedTags = new Set(currentTags);
@@ -2434,14 +1911,6 @@
             const el = document.getElementById(id);
             if (el) el.classList.remove('active'); 
         }
-        function openBottomSheet(content) {
-            const sheet = document.getElementById('bottomSheet');
-            document.getElementById('bottomSheetContent').innerHTML = content;
-            sheet.classList.add('active');
-        }
-        function closeBottomSheet() {
-            document.getElementById('bottomSheet').classList.remove('active');
-        }
 
         // ============ CATEGORY ANALYSIS ============
         function openCategoryAnalysis(categoryKey) {
@@ -2615,18 +2084,6 @@
         }
 
         function renderGraficos() {
-            let totalInc = 0, totalExp = 0;
-            transactions.forEach(t => {
-                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') totalInc += t.amount;
-                else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') totalExp += t.amount;
-            });
-            animateNumber(document.getElementById('grafTotalIncome'), totalInc);
-            animateNumber(document.getElementById('grafTotalExpense'), totalExp);
-            animateNumber(document.getElementById('grafTotalBalance'), totalInc - totalExp);
-            document.getElementById('grafTransactionCount').textContent = transactions.length;
-
-            renderTrend();
-
             const catTotals = getCategoryTotals();
             const labels = Object.keys(catTotals).filter(k => catTotals[k].income > 0 || catTotals[k].expense > 0);
             if (charts.chartIncomeExpense) charts.chartIncomeExpense.destroy();
@@ -2733,90 +2190,39 @@
                 }
             });
 
-            renderHeatmap();
+            renderTrend();
         }
 
-        function renderHeatmap() {
-            const container = document.getElementById('heatmapContainer');
-            const today = new Date();
-            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-            
-            const dailyTotals = {};
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                dailyTotals[d] = 0;
-            }
-            transactions.forEach(t => {
-                if (t.date.startsWith(today.toISOString().slice(0, 7))) {
-                    const day = parseInt(t.date.split('-')[2]);
-                    if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
-                        dailyTotals[day] = (dailyTotals[day] || 0) + t.amount;
-                    }
-                }
+        function renderTrend() {
+            const month = filterMonth.value;
+            const filtered = transactions.filter(t => t.date.startsWith(month));
+            const days = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
+            const labels = Array.from({length: days}, (_, i) => i + 1);
+            const dI = Array(days).fill(0), dE = Array(days).fill(0);
+            filtered.forEach(t => {
+                const d = parseInt(t.date.split('-')[2]);
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') dI[d-1] += t.amount;
+                else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') dE[d-1] += t.amount;
             });
-
-            const maxVal = Math.max(...Object.values(dailyTotals), 1);
-            const firstDayOfWeek = firstDay.getDay();
-            let html = '<div class="heatmap-grid">';
-            const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-            weekDays.forEach(wd => { html += `<div class="heatmap-weekday">${wd}</div>`; });
-            for (let i = 0; i < firstDayOfWeek; i++) { html += `<div class="heatmap-cell" style="background: transparent;"></div>`; }
-            for (let d = 1; d <= daysInMonth; d++) {
-                const val = dailyTotals[d] || 0;
-                const intensity = maxVal > 0 ? val / maxVal : 0;
-                const color = getHeatmapColor(intensity);
-                const isToday = d === today.getDate();
-                html += `<div class="heatmap-cell" style="background: ${color}; ${isToday ? 'border: 2px solid #6366f1;' : ''}" title="Dia ${d}: ${formatCurrency(val)}"><span class="heatmap-value">${d}</span></div>`;
-            }
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        function getHeatmapColor(intensity) {
-            if (intensity === 0) return '#0f172a';
-            if (intensity < 0.1) return '#0c4a6e';
-            if (intensity < 0.2) return '#1e6f9f';
-            if (intensity < 0.3) return '#3b82f6';
-            if (intensity < 0.4) return '#60a5fa';
-            if (intensity < 0.5) return '#93c5fd';
-            if (intensity < 0.6) return '#fcd34d';
-            if (intensity < 0.7) return '#f59e0b';
-            if (intensity < 0.85) return '#d97706';
-            return '#b91c1c';
-        }
-
-        // ============ ANIMATIONS ============
-        function animateNumber(element, target, prefix = 'R$ ', decimals = 2) {
-            if (!element) return;
-            const duration = 800;
-            const start = performance.now();
-            const initial = 0;
+            const aI = [], aE = [], aB = []; let sI = 0, sE = 0;
+            for(let i=0; i<days; i++) { sI += dI[i]; sE += dE[i]; aI.push(sI); aE.push(sE); aB.push(sI - sE); }
             
-            function update(currentTime) {
-                const elapsed = currentTime - start;
-                const progress = Math.min(elapsed / duration, 1);
-                const eased = 1 - Math.pow(1 - progress, 3);
-                const current = initial + (target - initial) * eased;
-                element.textContent = prefix + current.toFixed(decimals).replace('.', ',');
-                if (progress < 1) {
-                    requestAnimationFrame(update);
-                } else {
-                    element.textContent = prefix + target.toFixed(decimals).replace('.', ',');
-                    element.classList.add('value-animate');
-                    setTimeout(() => element.classList.remove('value-animate'), 500);
+            const opts = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#64748b', font: { size: 10, weight: 'bold' }, boxWidth: 12 } } },
+                scales: {
+                    x: { display: true, ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(71, 85, 105, 0.1)' } },
+                    y: { display: true, ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(71, 85, 105, 0.1)' } }
                 }
-            }
-            requestAnimationFrame(update);
-        }
-
-        function animateNewRow(row) {
-            row.style.transform = 'scale(0.95)';
-            row.style.opacity = '0';
-            requestAnimationFrame(() => {
-                row.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                row.style.transform = 'scale(1)';
-                row.style.opacity = '1';
+            };
+            if(charts.line) charts.line.destroy();
+            charts.line = new Chart(document.getElementById('lineChart'), {
+                type: 'line',
+                data: { labels, datasets: [
+                    { label: 'Saldo', data: aB, borderColor: '#6366f1', borderWidth: 3, tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.05)', pointRadius: 0 },
+                    { label: 'Receitas', data: aI, borderColor: '#10b981', borderWidth: 2, borderDash: [4, 4], tension: 0.4, pointRadius: 0 },
+                    { label: 'Despesas', data: aE, borderColor: '#f43f5e', borderWidth: 2, borderDash: [2, 2], tension: 0.4, pointRadius: 0 }
+                ] }, options: opts
             });
         }
 
@@ -2930,7 +2336,14 @@
             if (status === 'paid') filtered = filtered.filter(t => t.paid);
             else if (status === 'unpaid') filtered = filtered.filter(t => !t.paid);
             if (tag !== 'all') filtered = filtered.filter(t => (t.tags || []).includes(tag));
-            return filtered;
+            
+            // Ordenar: primeiro pendentes (mais recentes), depois pagos (mais recentes)
+            return filtered.sort((a, b) => {
+                // Primeiro separar por status (pendentes primeiro)
+                if (a.paid !== b.paid) return a.paid ? 1 : -1;
+                // Depois ordenar por data (mais recente primeiro)
+                return new Date(b.date) - new Date(a.date);
+            });
         }
 
         function clearFilters() {
@@ -2954,13 +2367,6 @@
             if (idx !== -1) { 
                 transactions[idx].paid = !transactions[idx].paid; 
                 save();
-                // Animate feedback
-                const row = document.querySelector(`tr[data-id="${id}"]`);
-                if (row) {
-                    row.style.transition = 'all 0.3s ease';
-                    row.style.backgroundColor = transactions[idx].paid ? 'rgba(16,185,129,0.05)' : 'rgba(245,158,11,0.05)';
-                    setTimeout(() => row.style.backgroundColor = '', 1000);
-                }
             }
         }
 
@@ -3087,7 +2493,7 @@
             const completed = goals.filter(g => g.current >= g.target).length;
             const totalSaved = goals.reduce((s, g) => s + g.current, 0);
             const avgProgress = total > 0 ? goals.reduce((s, g) => s + Math.min((g.current / g.target) * 100, 100), 0) / total : 0;
-            animateNumber(document.getElementById('totalGoalsCount'), total, '');
+            document.getElementById('totalGoalsCount').textContent = total;
             document.getElementById('completedGoalsCount').textContent = completed;
             document.getElementById('totalSavedGoals').textContent = formatCurrency(totalSaved);
             document.getElementById('avgProgressGoals').textContent = `${avgProgress.toFixed(0)}%`;
@@ -3205,7 +2611,7 @@
         function renderDashboard() {
             const grid = document.getElementById('dashboardGrid');
             const month = filterMonth.value;
-            const monthlyFiltered = transactions.filter(t => t.date.startsWith(month));
+            const monthlyFiltered = transactions.filter(t => t.date.startsWith(month) && !t.paid);
             let monthInc = 0, monthExp = 0;
             monthlyFiltered.forEach(t => { 
                 if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') monthInc += t.amount;
@@ -3218,7 +2624,7 @@
                 { id: 'balance', className: 'col-span-full lg:col-span-2 border-l-4 border-l-cyan-400', content: `
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Saldo Mensal</span>
-                        <span class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full text-[9px] font-extrabold">Todos os lançamentos</span>
+                        <span class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full text-[9px] font-extrabold">Apenas pendentes</span>
                     </div>
                     <div class="flex items-end gap-4">
                         <h3 id="monthlyBalance" class="text-2xl lg:text-3xl font-black text-cyan-400 tracking-tighter">${formatCurrency(monthBal)}</h3>
@@ -3287,17 +2693,6 @@
                 `}
             ];
 
-            // Apply saved order
-            if (dashboardOrder.length > 0) {
-                cards.sort((a, b) => {
-                    const indexA = dashboardOrder.indexOf(a.id);
-                    const indexB = dashboardOrder.indexOf(b.id);
-                    if (indexA === -1) return 1;
-                    if (indexB === -1) return -1;
-                    return indexA - indexB;
-                });
-            }
-
             grid.innerHTML = cards.map(card => `
                 <div class="bento-item ${card.className}" data-id="${card.id}">
                     ${card.content}
@@ -3321,7 +2716,6 @@
                 }).join('');
 
             renderAnalisesInsideDashboard(monthlyFiltered);
-            enableDragDrop();
         }
 
         function renderAnalisesInsideDashboard(filtered) {
@@ -3362,43 +2756,9 @@
             }).join('');
         }
 
-        // ============ RENDER TREND ============
-        function renderTrend() {
-            const month = filterMonth.value;
-            const filtered = transactions.filter(t => t.date.startsWith(month));
-            const days = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
-            const labels = Array.from({length: days}, (_, i) => i + 1);
-            const dI = Array(days).fill(0), dE = Array(days).fill(0);
-            filtered.forEach(t => {
-                const d = parseInt(t.date.split('-')[2]);
-                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') dI[d-1] += t.amount;
-                else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') dE[d-1] += t.amount;
-            });
-            const aI = [], aE = [], aB = []; let sI = 0, sE = 0;
-            for(let i=0; i<days; i++) { sI += dI[i]; sE += dE[i]; aI.push(sI); aE.push(sE); aB.push(sI - sE); }
-            
-            const opts = {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#64748b', font: { size: 10, weight: 'bold' }, boxWidth: 12 } } },
-                scales: {
-                    x: { display: true, ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(71, 85, 105, 0.1)' } },
-                    y: { display: true, ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(71, 85, 105, 0.1)' } }
-                }
-            };
-            if(charts.line) charts.line.destroy();
-            charts.line = new Chart(document.getElementById('lineChart'), {
-                type: 'line',
-                data: { labels, datasets: [
-                    { label: 'Saldo', data: aB, borderColor: '#6366f1', borderWidth: 3, tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.05)', pointRadius: 0 },
-                    { label: 'Receitas', data: aI, borderColor: '#10b981', borderWidth: 2, borderDash: [4, 4], tension: 0.4, pointRadius: 0 },
-                    { label: 'Despesas', data: aE, borderColor: '#f43f5e', borderWidth: 2, borderDash: [2, 2], tension: 0.4, pointRadius: 0 }
-                ] }, options: opts
-            });
-        }
-
         // ============ RENDER LANÇAMENTOS ============
         function renderLancamentos() {
-            const filtered = getFilteredTransactions().sort((a,b) => new Date(b.date) - new Date(a.date));
+            const filtered = getFilteredTransactions();
             const todayStr = new Date().toISOString().slice(0, 10);
             document.getElementById('lancamentosBadge').textContent = filtered.length;
             
@@ -3463,6 +2823,13 @@
                 totalCurrent += current;
                 totalPrev += prev;
                 rows.push({ cat, current, prev, variation, type });
+            });
+            
+            // Ordenar por categoria
+            rows.sort((a, b) => {
+                const nameA = categoryMeta[a.cat]?.name || a.cat;
+                const nameB = categoryMeta[b.cat]?.name || b.cat;
+                return nameA.localeCompare(nameB);
             });
             
             const totalVariation = totalPrev > 0 ? ((totalCurrent - totalPrev) / totalPrev * 100) : 0;
@@ -3560,39 +2927,6 @@
             `;
             grid.appendChild(statsCard);
 
-            // Radar
-            const radarCard = document.createElement('div');
-            radarCard.className = 'report-card';
-            radarCard.innerHTML = `
-                <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
-                    <i class="fas fa-chart-radar text-cyan-400 text-sm"></i>
-                    Análise por Categoria
-                </h3>
-                <div class="h-[280px]">
-                    <canvas id="radarChart"></canvas>
-                </div>
-            `;
-            grid.appendChild(radarCard);
-
-            // Gauge
-            const gaugeCard = document.createElement('div');
-            gaugeCard.className = 'report-card';
-            gaugeCard.innerHTML = `
-                <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
-                    <i class="fas fa-speedometer text-indigo-400 text-sm"></i>
-                    Saúde Financeira
-                </h3>
-                <div id="gaugeContainer" class="relative h-[200px] flex items-center justify-center">
-                    <canvas id="gaugeChart"></canvas>
-                </div>
-                <div id="gaugeLabels" class="flex justify-between text-xs text-slate-500 mt-2 px-4">
-                    <span>Crítico</span>
-                    <span>Estável</span>
-                    <span>Excelente</span>
-                </div>
-            `;
-            grid.appendChild(gaugeCard);
-
             // Stacked Area
             const areaCard = document.createElement('div');
             areaCard.className = 'report-card full-width';
@@ -3620,18 +2954,6 @@
                 </div>
             `;
             grid.appendChild(waterfallCard);
-
-            // Trend Indicators
-            const trendCard = document.createElement('div');
-            trendCard.className = 'report-card full-width';
-            trendCard.innerHTML = `
-                <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
-                    <i class="fas fa-chart-simple text-amber-400 text-sm"></i>
-                    Indicadores de Tendência
-                </h3>
-                <div id="trendIndicators"></div>
-            `;
-            grid.appendChild(trendCard);
 
             renderReportsData();
         }
@@ -3671,72 +2993,6 @@
             `;
 
             gerarResumoContador(month, filtered, inc, exp, total, paid);
-
-            // Gauge
-            const maxSaldo = Math.max(Math.abs(saldo), 1);
-            const score = Math.min(Math.max(((saldo / maxSaldo) * 50 + 50), 0), 100);
-            new Chart(document.getElementById('gaugeChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Saúde Financeira', ''],
-                    datasets: [{
-                        data: [score, 100 - score],
-                        backgroundColor: [
-                            score >= 70 ? '#10b981' : score >= 40 ? '#f59e0b' : '#f43f5e',
-                            'rgba(255,255,255,0.05)'
-                        ],
-                        borderWidth: 0,
-                        cutout: '70%'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    cutout: '70%'
-                }
-            });
-
-            // Radar
-            const categories = ['Moradia', 'Alimentação', 'Transporte', 'Lazer', 'Contas', 'Outros'];
-            const radarData = categories.map(catName => {
-                const cat = Object.values(categoryMeta).find(c => c.name === catName);
-                if (!cat) return 0;
-                return filtered.filter(t => t.category === Object.keys(categoryMeta).find(k => categoryMeta[k].name === catName))
-                    .reduce((s, t) => s + t.amount, 0);
-            });
-            const maxRadar = Math.max(...radarData, 1);
-            new Chart(document.getElementById('radarChart'), {
-                type: 'radar',
-                data: {
-                    labels: categories,
-                    datasets: [{
-                        label: 'Gastos por Categoria',
-                        data: radarData.map(v => (v / maxRadar) * 100),
-                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                        borderColor: '#6366f1',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#6366f1'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#64748b', font: { size: 10, weight: 'bold' } } }
-                    },
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: { color: '#475569', font: { size: 8 }, stepSize: 20, backdropColor: 'transparent' },
-                            grid: { color: 'rgba(71, 85, 105, 0.1)' },
-                            angleLines: { color: 'rgba(71, 85, 105, 0.2)' },
-                            pointLabels: { color: '#94a3b8', font: { size: 9, weight: 'bold' } }
-                        }
-                    }
-                }
-            });
 
             // Stacked Area
             const months = [];
@@ -3784,7 +3040,7 @@
                     expenses[name] = (expenses[name] || 0) + t.amount;
                 }
             });
-            const sorted = Object.entries(expenses).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const sorted = Object.entries(expenses).sort((a, b) => b[1] - a[1]);
             const waterLabels = sorted.map(([name]) => name);
             const waterValues = sorted.map(([_, value]) => value);
             const waterColors = sorted.map(([name]) => {
@@ -3792,9 +3048,12 @@
                 return cat ? cat.color : '#94a3b8';
             });
             const totalExpenses = waterValues.reduce((a, b) => a + b, 0);
-            const waterfallData = [...waterValues, totalExpenses, inc - totalExpenses];
-            const waterfallLabels = [...waterLabels, 'Total Gastos', 'Saldo Final'];
-            const waterfallColors = [...waterColors, '#f43f5e', inc - totalExpenses >= 0 ? '#10b981' : '#f43f5e'];
+            
+            // Categorias individuais + divisor + total
+            const waterfallData = [...waterValues, totalExpenses];
+            const waterfallLabels = [...waterLabels, 'TOTAL DE GASTOS'];
+            const waterfallColors = [...waterColors, '#f43f5e'];
+            
             new Chart(document.getElementById('waterfallChart'), {
                 type: 'bar',
                 data: {
@@ -3810,71 +3069,37 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        x: { ticks: { color: '#475569', font: { size: 9, weight: 'bold' } }, grid: { display: false } },
-                        y: { ticks: { color: '#475569', font: { size: 9 }, callback: v => 'R$' + v.toFixed(0) }, grid: { color: 'rgba(71,85,105,0.1)' } }
+                        x: { 
+                            ticks: { 
+                                color: '#475569', 
+                                font: { size: 9, weight: 'bold' },
+                                maxRotation: 45,
+                                minRotation: 30
+                            }, 
+                            grid: { display: false } 
+                        },
+                        y: { 
+                            ticks: { 
+                                color: '#475569', 
+                                font: { size: 9 },
+                                callback: v => 'R$' + v.toFixed(0)
+                            }, 
+                            grid: { color: 'rgba(71,85,105,0.1)' } 
+                        }
                     }
                 }
             });
-
-            // Trend Indicators
-            const today = new Date();
-            const thisMonth = today.toISOString().slice(0, 7);
-            const lastMonth = new Date(today.setMonth(today.getMonth() - 1)).toISOString().slice(0, 7);
-            
-            const thisMonthTrans = transactions.filter(t => t.date.startsWith(thisMonth));
-            const lastMonthTrans = transactions.filter(t => t.date.startsWith(lastMonth));
-            
-            const thisInc = thisMonthTrans.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'income').reduce((s, t) => s + t.amount, 0);
-            const thisExp = thisMonthTrans.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0);
-            const lastInc = lastMonthTrans.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'income').reduce((s, t) => s + t.amount, 0);
-            const lastExp = lastMonthTrans.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0);
-            
-            const changeIncome = lastInc > 0 ? ((thisInc - lastInc) / lastInc) * 100 : 0;
-            const changeExpense = lastExp > 0 ? ((thisExp - lastExp) / lastExp) * 100 : 0;
-            
-            const prevMonths = [];
-            for (let i = 1; i <= 3; i++) {
-                const d = new Date();
-                d.setMonth(d.getMonth() - i);
-                const key = d.toISOString().slice(0, 7);
-                const trans = transactions.filter(t => t.date.startsWith(key));
-                const incM = trans.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'income').reduce((s, t) => s + t.amount, 0);
-                const expM = trans.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0);
-                prevMonths.push({ inc: incM, exp: expM });
-            }
-            const avgInc = prevMonths.reduce((s, m) => s + m.inc, 0) / prevMonths.length;
-            const avgExp = prevMonths.reduce((s, m) => s + m.exp, 0) / prevMonths.length;
-
-            document.getElementById('trendIndicators').innerHTML = `
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="stat-card">
-                        <p class="text-[8px] text-slate-500 uppercase font-black">Variação Receitas</p>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-lg font-bold ${changeIncome >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-                                ${changeIncome >= 0 ? '↑' : '↓'} ${Math.abs(changeIncome).toFixed(1)}%
-                            </span>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <p class="text-[8px] text-slate-500 uppercase font-black">Variação Despesas</p>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-lg font-bold ${changeExpense <= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-                                ${changeExpense <= 0 ? '↓' : '↑'} ${Math.abs(changeExpense).toFixed(1)}%
-                            </span>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <p class="text-[8px] text-slate-500 uppercase font-black">Previsão Receitas</p>
-                        <p class="text-lg font-bold text-emerald-400 mt-1">${formatCurrency(avgInc)}</p>
-                    </div>
-                    <div class="stat-card">
-                        <p class="text-[8px] text-slate-500 uppercase font-black">Previsão Despesas</p>
-                        <p class="text-lg font-bold text-rose-400 mt-1">${formatCurrency(avgExp)}</p>
-                    </div>
-                </div>
-            `;
         }
 
         function gerarResumoContador(month, filtered, inc, exp, total, paid) {
@@ -4014,9 +3239,6 @@
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = tomorrow.toISOString().slice(0, 10);
-            const threeDaysLater = new Date(today);
-            threeDaysLater.setDate(threeDaysLater.getDate() + 3);
-            const threeDaysStr = threeDaysLater.toISOString().slice(0, 10);
 
             // Due today
             const dueToday = transactions.filter(t => 
@@ -4058,37 +3280,6 @@
             });
         }
 
-        // ============ SWIPE NAVIGATION ============
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        function setupSwipe() {
-            const tabs = ['dashboard', 'lancamentos', 'calendario', 'graficos', 'metas', 'relatorios', 'comparacao'];
-            
-            document.addEventListener('touchstart', e => {
-                touchStartX = e.changedTouches[0].screenX;
-            }, { passive: true });
-
-            document.addEventListener('touchend', e => {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe(tabs);
-            }, { passive: true });
-        }
-
-        function handleSwipe(tabs) {
-            const swipeDistance = touchEndX - touchStartX;
-            if (Math.abs(swipeDistance) > 50) {
-                const currentIndex = tabs.findIndex(t => document.getElementById(`${t}Tab`)?.classList.contains('active'));
-                if (currentIndex === -1) return;
-                
-                if (swipeDistance > 0 && currentIndex > 0) {
-                    showTab(tabs[currentIndex - 1]);
-                } else if (swipeDistance < 0 && currentIndex < tabs.length - 1) {
-                    showTab(tabs[currentIndex + 1]);
-                }
-            }
-        }
-
         // ============ TABS ============
         function showTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -4119,7 +3310,6 @@
             if (tab === 'comparacao') renderComparison();
             renderAll();
             
-            // Scroll to top on mobile
             if (isMobile) {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -4239,7 +3429,6 @@
             renderAll();
             renderCalendar();
             renderTags();
-            setupSwipe();
             
             // Event listeners
             document.getElementById('searchFilter').oninput = renderAll;
