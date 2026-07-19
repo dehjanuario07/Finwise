@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-pt" data-theme="dark">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,29 +27,12 @@
             --scrollbar-bg: #334155;
             --picker-filter: invert(1);
         }
-
-        [data-theme="light"] {
-            --bg-primary: #f1f5f9;
-            --bg-secondary: rgba(255, 255, 255, 0.8);
-            --bg-tertiary: rgba(255, 255, 255, 0.5);
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-muted: #94a3b8;
-            --border-color: rgba(0, 0, 0, 0.06);
-            --border-hover: rgba(99, 102, 241, 0.3);
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --card-bg: rgba(255, 255, 255, 0.8);
-            --input-bg: rgba(255, 255, 255, 0.5);
-            --scrollbar-bg: #cbd5e1;
-            --picker-filter: invert(0);
-        }
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             overflow-x: hidden;
             background-color: var(--bg-primary);
             color: var(--text-primary);
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         .tab-content { 
@@ -815,27 +798,6 @@
             border-color: rgba(99, 102, 241, 0.3);
         }
 
-        /* ===== THEME TOGGLE ===== */
-        .theme-toggle {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-        }
-        .theme-toggle:hover {
-            border-color: var(--border-hover);
-            color: var(--text-primary);
-            transform: rotate(30deg);
-        }
-
         /* ===== COMPARISON TABLE ===== */
         .comparison-table {
             width: 100%;
@@ -862,6 +824,40 @@
         }
         .comparison-table .trend-up { color: #f43f5e; }
         .comparison-table .trend-down { color: #10b981; }
+
+        /* ===== TREND INDICATOR ===== */
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.65rem;
+            font-weight: 800;
+        }
+        .trend-indicator .trend-value {
+            font-size: 0.9rem;
+        }
+        .trend-indicator .trend-label {
+            font-size: 0.55rem;
+            opacity: 0.7;
+            font-weight: 600;
+        }
+        .trend-indicator.up {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .trend-indicator.down {
+            background: rgba(244, 63, 94, 0.15);
+            color: #f43f5e;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+        .trend-indicator.stable {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
 
         /* ===== WATERFALL DIVIDER ===== */
         .waterfall-divider {
@@ -893,6 +889,8 @@
             .resumo-contador .texto-resumo { font-size: 0.75rem; }
             .category-analysis-modal .analysis-grid { grid-template-columns: 1fr 1fr; }
             .category-analysis-modal .analysis-grid .analysis-card { padding: 0.5rem; }
+            .trend-indicator { font-size: 0.5rem; padding: 0.15rem 0.5rem; }
+            .trend-indicator .trend-value { font-size: 0.7rem; }
         }
     </style>
 </head>
@@ -1256,16 +1254,9 @@
             </div>
             
             <div class="flex flex-col items-center md:items-end gap-3 w-full md:w-auto overflow-hidden">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-xl px-4 py-1.5 shadow-inner">
-                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Período:</span>
-                        <input type="month" id="monthFilter" class="bg-transparent text-indigo-400 text-xs font-bold outline-none">
-                    </div>
-                    
-                    <!-- Theme Toggle -->
-                    <button onclick="toggleTheme()" class="theme-toggle" id="themeToggle" title="Alternar tema">
-                        <i class="fas fa-moon"></i>
-                    </button>
+                <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-xl px-4 py-1.5 shadow-inner">
+                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Período:</span>
+                    <input type="month" id="monthFilter" class="bg-transparent text-indigo-400 text-xs font-bold outline-none">
                 </div>
 
                 <nav class="tab-nav" id="tabNav">
@@ -1568,7 +1559,7 @@
             <div class="flex items-center gap-2">
                 <i class="fas fa-wallet text-indigo-500 text-xl"></i>
                 <span class="text-lg font-black bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent tracking-tighter">Finwise</span>
-                <span class="ml-2 px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-full text-[10px] font-black italic" id="versionLabel">v4.2</span>
+                <span class="ml-2 px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-full text-[10px] font-black italic" id="versionLabel">v4.6</span>
             </div>
             <div class="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-700"></div>
             <div class="flex items-center gap-2 text-sm text-slate-400 font-bold">
@@ -1578,7 +1569,7 @@
     </div>
 
     <script>
-        const CURRENT_VERSION = "4.2";
+        const CURRENT_VERSION = "4.6";
         let transactions = JSON.parse(localStorage.getItem('finwise_db')) || [];
         let goals = JSON.parse(localStorage.getItem('finwise_goals')) || [];
 
@@ -1612,32 +1603,6 @@
 
         const currencyConfig = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
         const isMobile = window.innerWidth < 768;
-
-        // ============ THEME TOGGLE ============
-        function toggleTheme() {
-            const html = document.documentElement;
-            const current = html.getAttribute('data-theme');
-            const newTheme = current === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('finwise_theme', newTheme);
-            updateThemeIcon(newTheme);
-            showToast(`Tema ${newTheme === 'dark' ? '🌙 Escuro' : '☀️ Claro'} ativado!`, 'info');
-        }
-
-        function updateThemeIcon(theme) {
-            const btn = document.getElementById('themeToggle');
-            if (btn) {
-                btn.innerHTML = theme === 'dark' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
-            }
-        }
-
-        function loadTheme() {
-            const saved = localStorage.getItem('finwise_theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = saved || (prefersDark ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', theme);
-            updateThemeIcon(theme);
-        }
 
         // ============ TAGS SYSTEM ============
         function saveTags() {
@@ -2337,11 +2302,8 @@
             else if (status === 'unpaid') filtered = filtered.filter(t => !t.paid);
             if (tag !== 'all') filtered = filtered.filter(t => (t.tags || []).includes(tag));
             
-            // Ordenar: primeiro pendentes (mais recentes), depois pagos (mais recentes)
             return filtered.sort((a, b) => {
-                // Primeiro separar por status (pendentes primeiro)
                 if (a.paid !== b.paid) return a.paid ? 1 : -1;
-                // Depois ordenar por data (mais recente primeiro)
                 return new Date(b.date) - new Date(a.date);
             });
         }
@@ -2611,40 +2573,107 @@
         function renderDashboard() {
             const grid = document.getElementById('dashboardGrid');
             const month = filterMonth.value;
-            const monthlyFiltered = transactions.filter(t => t.date.startsWith(month) && !t.paid);
-            let monthInc = 0, monthExp = 0;
-            monthlyFiltered.forEach(t => { 
-                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') monthInc += t.amount;
-                else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') monthExp += t.amount;
+            
+            // TODAS as transações do mês (para o saldo geral - NÃO diminui ao pagar)
+            const allMonthly = transactions.filter(t => t.date.startsWith(month));
+            let totalInc = 0, totalExp = 0;
+            allMonthly.forEach(t => {
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') totalInc += t.amount;
+                else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') totalExp += t.amount;
             });
-            const monthBal = monthInc - monthExp;
+            const totalBalance = totalInc - totalExp;
+
+            // Transações do mês (apenas pendentes para ganhos e gastos pendentes)
+            const pendingMonthly = transactions.filter(t => t.date.startsWith(month) && !t.paid);
+            let pendInc = 0, pendExp = 0;
+            pendingMonthly.forEach(t => { 
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') pendInc += t.amount;
+                else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') pendExp += t.amount;
+            });
+
+            // Calcular tendência do saldo (comparação com mês anterior)
+            const prevMonth = new Date(month);
+            prevMonth.setMonth(prevMonth.getMonth() - 1);
+            const prevKey = prevMonth.toISOString().slice(0, 7);
+            const prevMonthly = transactions.filter(t => t.date.startsWith(prevKey));
+            let prevInc = 0, prevExp = 0;
+            prevMonthly.forEach(t => {
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') prevInc += t.amount;
+                else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') prevExp += t.amount;
+            });
+            const prevBalance = prevInc - prevExp;
+
+            let trendText = '', trendClass = '', trendIcon = '';
+            let variation = 0;
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const currentMonthName = monthNames[new Date(month).getMonth()];
+            const prevMonthName = monthNames[prevMonth.getMonth()];
+
+            if (prevBalance === 0 && totalBalance === 0) {
+                trendText = 'Sem dados anteriores';
+                trendClass = 'stable';
+                trendIcon = '—';
+            } else if (prevBalance === 0) {
+                trendText = `Novo saldo em relação a ${prevMonthName}`;
+                trendClass = 'up';
+                trendIcon = '▲';
+                variation = 100;
+            } else {
+                variation = ((totalBalance - prevBalance) / Math.abs(prevBalance)) * 100;
+                if (variation > 0) {
+                    trendClass = 'up';
+                    trendIcon = '▲';
+                    trendText = `${variation.toFixed(1)}% maior que ${prevMonthName}`;
+                } else if (variation < 0) {
+                    trendClass = 'down';
+                    trendIcon = '▼';
+                    trendText = `${Math.abs(variation).toFixed(1)}% menor que ${prevMonthName}`;
+                } else {
+                    trendClass = 'stable';
+                    trendIcon = '—';
+                    trendText = `Igual a ${prevMonthName}`;
+                }
+            }
 
             // Build dashboard cards
             const cards = [
                 { id: 'balance', className: 'col-span-full lg:col-span-2 border-l-4 border-l-cyan-400', content: `
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Saldo Mensal</span>
-                        <span class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full text-[9px] font-extrabold">Apenas pendentes</span>
+                        <span class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full text-[9px] font-extrabold">Todas as transações</span>
                     </div>
-                    <div class="flex items-end gap-4">
-                        <h3 id="monthlyBalance" class="text-2xl lg:text-3xl font-black text-cyan-400 tracking-tighter">${formatCurrency(monthBal)}</h3>
-                        <span id="monthlyBalanceTrend" class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg">▲ 0%</span>
+                    <div class="flex flex-wrap items-end gap-3">
+                        <h3 id="monthlyBalance" class="text-2xl lg:text-3xl font-black text-cyan-400 tracking-tighter">${formatCurrency(totalBalance)}</h3>
+                        <span class="trend-indicator ${trendClass}">
+                            <span class="trend-value">${trendIcon} ${variation !== 0 && prevBalance !== 0 ? Math.abs(variation).toFixed(1) + '%' : ''}</span>
+                            <span class="trend-label">${trendText}</span>
+                        </span>
                     </div>
                     <div class="flex gap-4 mt-2 text-[10px]">
-                        <div><span class="text-slate-500">Receitas:</span> <span id="monthlyIncome" class="text-emerald-400 font-bold">${formatCurrency(monthInc)}</span></div>
-                        <div><span class="text-slate-500">Despesas:</span> <span id="monthlyExpense" class="text-rose-400 font-bold">${formatCurrency(monthExp)}</span></div>
+                        <div><span class="text-slate-500">Receitas:</span> <span id="monthlyIncome" class="text-emerald-400 font-bold">${formatCurrency(totalInc)}</span></div>
+                        <div><span class="text-slate-500">Despesas:</span> <span id="monthlyExpense" class="text-rose-400 font-bold">${formatCurrency(totalExp)}</span></div>
                     </div>
                 `},
-                { id: 'income', className: 'col-span-1 border-l-4 border-l-emerald-500', content: `
-                    <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-1">Ganhos</p>
-                    <h3 id="totalIncomes" class="text-xl font-black text-emerald-400 truncate">${formatCurrency(monthInc)}</h3>
+                { id: 'pend_income', className: 'col-span-1 border-l-4 border-l-emerald-500', content: `
+                    <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-1">Ganhos Pendentes</p>
+                    <h3 id="totalIncomes" class="text-xl font-black text-emerald-400 truncate">${formatCurrency(pendInc)}</h3>
                 `},
-                { id: 'expense', className: 'col-span-1 border-l-4 border-l-rose-500', content: `
+                { id: 'pend_expense', className: 'col-span-1 border-l-4 border-l-rose-500', content: `
                     <div class="flex justify-between items-center mb-1">
-                        <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Gastos</p>
-                        <span id="percOutcomesBadge" class="text-rose-400 text-[9px] font-extrabold">${monthInc > 0 ? (monthExp/monthInc*100).toFixed(0) : 0}%</span>
+                        <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Gastos Pendentes</p>
+                        <span id="percOutcomesBadge" class="text-rose-400 text-[9px] font-extrabold">${pendInc > 0 ? (pendExp/pendInc*100).toFixed(0) : 0}%</span>
                     </div>
-                    <h3 id="totalOutcomes" class="text-xl font-black text-rose-400 truncate">${formatCurrency(monthExp)}</h3>
+                    <h3 id="totalOutcomes" class="text-xl font-black text-rose-400 truncate">${formatCurrency(pendExp)}</h3>
+                `},
+                { id: 'total_income', className: 'col-span-1 border-l-4 border-l-emerald-600', content: `
+                    <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-1">Receita Total</p>
+                    <h3 id="totalIncomeAll" class="text-xl font-black text-emerald-400 truncate">${formatCurrency(totalInc)}</h3>
+                    <p class="text-[8px] text-slate-500 mt-0.5">Todas as receitas (incluindo pagas)</p>
+                `},
+                { id: 'total_expense', className: 'col-span-1 border-l-4 border-l-rose-600', content: `
+                    <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-1">Despesa Total</p>
+                    <h3 id="totalExpenseAll" class="text-xl font-black text-rose-400 truncate">${formatCurrency(totalExp)}</h3>
+                    <p class="text-[8px] text-slate-500 mt-0.5">Todas as despesas (incluindo pagas)</p>
                 `},
                 { id: 'overdue', className: 'col-span-1 border-l-4 border-l-rose-600', content: `
                     <div class="flex items-center gap-2 mb-1">
@@ -2652,8 +2681,8 @@
                         <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Contas Vencidas</p>
                     </div>
                     <div class="flex items-end gap-2">
-                        <h3 id="contasVencidas" class="text-xl font-black text-rose-500">${monthlyFiltered.filter(t => !t.paid && t.date < new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').length}</h3>
-                        <span id="contasVencidasValor" class="text-xs font-bold text-rose-400">${formatCurrency(monthlyFiltered.filter(t => !t.paid && t.date < new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0))}</span>
+                        <h3 id="contasVencidas" class="text-xl font-black text-rose-500">${pendingMonthly.filter(t => !t.paid && t.date < new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').length}</h3>
+                        <span id="contasVencidasValor" class="text-xs font-bold text-rose-400">${formatCurrency(pendingMonthly.filter(t => !t.paid && t.date < new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0))}</span>
                     </div>
                 `},
                 { id: 'dueToday', className: 'col-span-1 border-l-4 border-l-amber-500', content: `
@@ -2662,8 +2691,8 @@
                         <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Vence Hoje</p>
                     </div>
                     <div class="flex items-end gap-2">
-                        <h3 id="contasVenceHoje" class="text-xl font-black text-amber-400">${monthlyFiltered.filter(t => !t.paid && t.date === new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').length}</h3>
-                        <span id="contasVenceHojeValor" class="text-xs font-bold text-amber-400">${formatCurrency(monthlyFiltered.filter(t => !t.paid && t.date === new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0))}</span>
+                        <h3 id="contasVenceHoje" class="text-xl font-black text-amber-400">${pendingMonthly.filter(t => !t.paid && t.date === new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').length}</h3>
+                        <span id="contasVenceHojeValor" class="text-xs font-bold text-amber-400">${formatCurrency(pendingMonthly.filter(t => !t.paid && t.date === new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0))}</span>
                     </div>
                 `},
                 { id: 'recent', className: 'col-span-full lg:col-span-2 lg:row-span-3', content: `
@@ -2677,7 +2706,7 @@
                             <canvas id="categoryDonutChart"></canvas>
                             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <span class="text-[8px] text-slate-500 font-bold">Total</span>
-                                <span id="donutTotalText" class="text-[11px] font-black text-white">${formatCurrency(monthlyFiltered.filter(t => categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0))}</span>
+                                <span id="donutTotalText" class="text-[11px] font-black text-white">${formatCurrency(pendingMonthly.filter(t => categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0))}</span>
                             </div>
                         </div>
                         <div id="categoryLegend" class="flex-1 space-y-2 w-full custom-scrollbar max-h-[140px] overflow-y-auto pr-2"></div>
@@ -2699,8 +2728,8 @@
                 </div>
             `).join('');
 
-            // Populate recent activity
-            document.getElementById('latestActivity').innerHTML = [...monthlyFiltered]
+            // Populate recent activity (apenas pendentes)
+            document.getElementById('latestActivity').innerHTML = [...pendingMonthly]
                 .sort((a,b) => b.id - a.id).slice(0, 10)
                 .map(t => {
                     const todayStr = new Date().toISOString().slice(0, 10);
@@ -2715,7 +2744,7 @@
                     return `<div class="flex justify-between items-center py-3 border-b border-slate-800/30 transition-all px-2 ${!t.paid && t.date < todayStr ? 'bg-rose-500/5 border-l-4 border-l-rose-500' : !t.paid ? 'transaction-pending' : ''}"><div class="flex items-center gap-3"><button onclick="togglePaid(${t.id})" class="w-6 h-6 rounded-lg border flex items-center justify-center ${t.paid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 text-slate-700'}"><i class="fas ${t.paid ? 'fa-check text-[8px]' : 'fa-circle text-[3px]'}"></i></button><button onclick="editTransaction(${t.id})" class="text-slate-500 hover:text-indigo-400 transition-all"><i class="fas fa-pen text-[10px]"></i></button><div class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-sm">${cat.icon}</div><div><p class="font-bold text-[11px] text-slate-100 truncate max-w-[120px]">${t.description}${isRecurring}</p><div class="flex items-center gap-2 mt-0.5"><span class="text-[9px] font-bold text-slate-500 italic">${formatDate(t.date)}</span>${statusBadge}${tags}</div></div></div><p class="font-black text-[11px] ${categoryMeta[t.category] && categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</p></div>`;
                 }).join('');
 
-            renderAnalisesInsideDashboard(monthlyFiltered);
+            renderAnalisesInsideDashboard(pendingMonthly);
         }
 
         function renderAnalisesInsideDashboard(filtered) {
@@ -3419,7 +3448,6 @@
 
         // ============ ON LOAD ============
         window.onload = () => {
-            loadTheme();
             document.getElementById('versionLabel').innerText = `v${CURRENT_VERSION}`;
             filterMonth.value = new Date().toISOString().slice(0, 7);
             document.getElementById('dataEvento').value = new Date().toISOString().slice(0, 10);
