@@ -6,6 +6,7 @@
     <title>Finwise - Intelligent Finance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
@@ -892,6 +893,32 @@
             .trend-indicator { font-size: 0.5rem; padding: 0.15rem 0.5rem; }
             .trend-indicator .trend-value { font-size: 0.7rem; }
         }
+
+        /* ===== POWER BI BUTTON ===== */
+        .btn-powerbi {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 800;
+            font-size: 0.75rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-powerbi:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-powerbi i {
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
@@ -1257,6 +1284,9 @@
                 <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-xl px-4 py-1.5 shadow-inner">
                     <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Período:</span>
                     <input type="month" id="monthFilter" class="bg-transparent text-indigo-400 text-xs font-bold outline-none">
+                    <button onclick="exportarParaPowerBI()" class="btn-powerbi ml-2">
+                        <i class="fas fa-file-excel"></i> Exportar Power BI
+                    </button>
                 </div>
 
                 <nav class="tab-nav" id="tabNav">
@@ -1603,6 +1633,143 @@
 
         const currencyConfig = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
         const isMobile = window.innerWidth < 768;
+
+        // ============ EXPORTAÇÃO PARA POWER BI ============
+        function exportarParaPowerBI() {
+            // 1. Recupera as transações salvas no localStorage
+            const transacoesSalvas = JSON.parse(localStorage.getItem('finwise_db') || '[]');
+            
+            if (transacoesSalvas.length === 0) {
+                showToast('Nenhuma transação encontrada para exportar.', 'error');
+                return;
+            }
+
+            // 2. Mapeia e padroniza os dados para a Tabela Fato
+            const dadosFato = transacoesSalvas.map((t, index) => {
+                // Determina o tipo baseado na categoria
+                const tipo = categoryMeta[t.category]?.type || 
+                            (t.amount >= 0 ? 'Receita' : 'Despesa');
+                
+                // Formata a data para padrão brasileiro
+                const dataFormatada = t.date ? 
+                    t.date.split('-').reverse().join('/') : 
+                    new Date().toLocaleDateString('pt-BR');
+
+                return {
+                    ID_Transacao: `T${String(index + 1).padStart(4, '0')}`,
+                    Data_Registro: t.date || '',
+                    Data_Formatada: dataFormatada,
+                    Descricao: t.description || '',
+                    Categoria: categoryMeta[t.category]?.name || t.category || 'Geral',
+                    Categoria_Key: t.category || 'geral',
+                    Tipo: tipo === 'income' ? 'Receita' : 'Despesa',
+                    Valor: Number(t.amount || 0),
+                    Status: t.paid ? 'Pago' : 'Pendente',
+                    Grupo: t.groupId ? 'Recorrente' : 'Único',
+                    Tags: (t.tags || []).join('; '),
+                    Ano: t.date ? t.date.split('-')[0] : '',
+                    Mes: t.date ? t.date.split('-')[1] : '',
+                    Dia: t.date ? t.date.split('-')[2] : ''
+                };
+            });
+
+            // 3. Cria a Tabela Dimensão de Categorias
+            const categoriasUnicas = [...new Set(dadosFato.map(t => t.Categoria))];
+            const dadosDimCategoria = categoriasUnicas.map((cat, index) => {
+                const trans = dadosFato.find(t => t.Categoria === cat);
+                const meta = Object.values(categoryMeta).find(m => m.name === cat);
+                return {
+                    ID_Categoria: `C${String(index + 1).padStart(2, '0')}`,
+                    Nome_Categoria: cat,
+                    Tipo_Categoria: trans?.Tipo || 'Despesa',
+                    Cor: meta?.color || '#94a3b8',
+                    Icone: meta?.icon || '📌'
+                };
+            });
+
+            // 4. Cria Tabela Dimensão de Tempo (opcional)
+            const datasUnicas = [...new Set(dadosFato.map(t => t.Data_Registro))].sort();
+            const dadosDimTempo = datasUnicas.map((data, index) => {
+                const parts = data.split('-');
+                return {
+                    ID_Tempo: `D${String(index + 1).padStart(3, '0')}`,
+                    Data_Completa: data,
+                    Ano: parts[0] || '',
+                    Mes: parts[1] || '',
+                    Dia: parts[2] || '',
+                    Trimestre: parts[1] ? `T${Math.ceil(parseInt(parts[1]) / 3)}` : '',
+                    Semana: parts[1] ? `Sem ${Math.ceil(parseInt(parts[2]) / 7)}` : ''
+                };
+            });
+
+            // 5. Monta o arquivo Excel (.xlsx) com múltiplas abas (Modelo Estrela)
+            const wb = XLSX.utils.book_new();
+
+            const wsFato = XLSX.utils.json_to_sheet(dadosFato);
+            const wsDimCat = XLSX.utils.json_to_sheet(dadosDimCategoria);
+            const wsDimTempo = XLSX.utils.json_to_sheet(dadosDimTempo);
+
+            // Ajusta largura das colunas automaticamente
+            const colWidths = [
+                { wch: 15 },  // ID_Transacao
+                { wch: 15 },  // Data_Registro
+                { wch: 15 },  // Data_Formatada
+                { wch: 30 },  // Descricao
+                { wch: 20 },  // Categoria
+                { wch: 15 },  // Categoria_Key
+                { wch: 12 },  // Tipo
+                { wch: 15 },  // Valor
+                { wch: 12 },  // Status
+                { wch: 12 },  // Grupo
+                { wch: 20 },  // Tags
+                { wch: 6 },   // Ano
+                { wch: 6 },   // Mes
+                { wch: 6 }    // Dia
+            ];
+            wsFato['!cols'] = colWidths;
+
+            XLSX.utils.book_append_sheet(wb, wsFato, "Fato_Transacoes");
+            XLSX.utils.book_append_sheet(wb, wsDimCat, "Dim_Categorias");
+            XLSX.utils.book_append_sheet(wb, wsDimTempo, "Dim_Tempo");
+
+            // 6. Adiciona uma aba com instruções para o Power BI
+            const instrucoes = [
+                ['📊 FINWISE - EXPORTAÇÃO PARA POWER BI'],
+                [''],
+                ['🔗 MODELO ESTRELA:'],
+                ['- Fato_Transacoes: Tabela de fatos com todas as transações'],
+                ['- Dim_Categorias: Dimensão de categorias (relação 1:N)'],
+                ['- Dim_Tempo: Dimensão de tempo (relação 1:N)'],
+                [''],
+                ['📌 RELACIONAMENTOS SUGERIDOS:'],
+                ['1. Fato_Transacoes.Categoria_Key → Dim_Categorias.ID_Categoria'],
+                ['2. Fato_Transacoes.Data_Registro → Dim_Tempo.Data_Completa'],
+                [''],
+                ['📈 MÉTRICAS RECOMENDADAS:'],
+                ['- Total de Receitas: SUM(Valor) WHERE Tipo = "Receita"'],
+                ['- Total de Despesas: SUM(Valor) WHERE Tipo = "Despesa"'],
+                ['- Saldo: SUM(Valor)'],
+                ['- Média Diária: AVERAGE(Valor)'],
+                [''],
+                ['📅 DASHBOARDS SUGERIDOS:'],
+                ['- Evolução Mensal (linha)'],
+                ['- Gastos por Categoria (donut/barra)'],
+                ['- Status de Pagamento (gráfico de rosca)'],
+                ['- Top 5 Categorias (barra)'],
+                [''],
+                [`📦 Exportado em: ${new Date().toLocaleString('pt-BR')}`],
+                [`📊 Total de transações: ${dadosFato.length}`],
+                [`🏷️ Total de categorias: ${dadosDimCategoria.length}`]
+            ];
+            const wsInstrucoes = XLSX.utils.aoa_to_sheet(instrucoes);
+            wsInstrucoes['!cols'] = [{ wch: 50 }];
+            XLSX.utils.book_append_sheet(wb, wsInstrucoes, "Instrucoes_PowerBI");
+
+            // 7. Dispara o download do arquivo compatível com Power BI
+            XLSX.writeFile(wb, `Finwise_PowerBI_${new Date().toISOString().slice(0,10)}.xlsx`);
+            
+            showToast(`✅ ${dadosFato.length} transações exportadas com sucesso!`, 'success');
+        }
 
         // ============ TAGS SYSTEM ============
         function saveTags() {
