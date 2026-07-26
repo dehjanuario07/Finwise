@@ -1690,7 +1690,7 @@
         const currencyConfig = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
         const isMobile = window.innerWidth < 768;
 
-        // ============ EXPORTAÇÃO PARA PDF ============
+        // ============ EXPORTAÇÃO PARA PDF SIMPLIFICADA ============
         function exportarParaPDF() {
             const loading = document.getElementById('pdfLoading');
             const progress = document.getElementById('pdfProgress');
@@ -1700,15 +1700,18 @@
             setTimeout(() => {
                 progress.style.width = '40%';
                 
-                const element = document.createElement('div');
-                element.style.cssText = `
+                // Criar o conteúdo do PDF em uma div separada
+                const content = document.createElement('div');
+                content.id = 'pdfContent';
+                content.style.cssText = `
                     padding: 30px;
                     background: #ffffff;
                     color: #1e293b;
-                    font-family: 'Arial', 'Helvetica', sans-serif;
-                    max-width: 1100px;
+                    font-family: Arial, Helvetica, sans-serif;
+                    max-width: 1000px;
                     margin: 0 auto;
-                    font-size: 12px;
+                    font-size: 11px;
+                    line-height: 1.5;
                 `;
                 
                 const month = filterMonth.value;
@@ -1716,111 +1719,121 @@
                 const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
                 const mesNome = monthNames[monthNum - 1];
                 
-                element.innerHTML = `
-                    <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #6366f1; padding-bottom: 20px;">
-                        <h1 style="font-size: 28px; font-weight: 900; color: #6366f1; margin: 0;">Finwise</h1>
-                        <p style="color: #64748b; font-size: 14px; margin-top: 4px; font-weight: 600;">Relatório Financeiro</p>
-                        <p style="color: #94a3b8; font-size: 12px; margin-top: 2px;">${mesNome} ${year} - Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
-                    </div>
-                `;
-
-                const filtered = transactions.filter(t => t.date.startsWith(month));
-                const inc = filtered.filter(t => categoryMeta[t.category]?.type === 'income').reduce((s, t) => s + t.amount, 0);
-                const exp = filtered.filter(t => categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0);
+                // Filtrar transações do mês
+                const filtered = transactions.filter(t => t.date && t.date.startsWith(month));
+                const inc = filtered.filter(t => categoryMeta[t.category]?.type === 'income').reduce((s, t) => s + (t.amount || 0), 0);
+                const exp = filtered.filter(t => categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + (t.amount || 0), 0);
                 const saldo = inc - exp;
                 const total = filtered.length;
                 const paid = filtered.filter(t => t.paid).length;
 
-                element.innerHTML += `
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 30px;">
-                        <div style="background: #f1f5f9; border-radius: 12px; padding: 14px; text-align: center;">
-                            <p style="font-size: 9px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Total</p>
-                            <p style="font-size: 22px; font-weight: 900; color: #1e293b; margin: 4px 0 0 0;">${total}</p>
+                // Cabeçalho simples
+                let html = `
+                    <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #6366f1; padding-bottom: 15px;">
+                        <h1 style="font-size: 22px; font-weight: 900; color: #6366f1; margin: 0;">Finwise</h1>
+                        <p style="color: #64748b; font-size: 12px; margin-top: 2px;">${mesNome}/${year}</p>
+                    </div>
+                `;
+
+                // Resumo em uma linha
+                html += `
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 20px; text-align: center;">
+                        <div style="background: #f1f5f9; padding: 10px; border-radius: 8px;">
+                            <div style="font-size: 9px; color: #64748b; font-weight: 700;">Total</div>
+                            <div style="font-size: 18px; font-weight: 900;">${total}</div>
                         </div>
-                        <div style="background: #dcfce7; border-radius: 12px; padding: 14px; text-align: center;">
-                            <p style="font-size: 9px; color: #166534; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Pagos</p>
-                            <p style="font-size: 22px; font-weight: 900; color: #16a34a; margin: 4px 0 0 0;">${paid}</p>
+                        <div style="background: #dcfce7; padding: 10px; border-radius: 8px;">
+                            <div style="font-size: 9px; color: #166534; font-weight: 700;">Pagos</div>
+                            <div style="font-size: 18px; font-weight: 900; color: #16a34a;">${paid}</div>
                         </div>
-                        <div style="background: #dcfce7; border-radius: 12px; padding: 14px; text-align: center;">
-                            <p style="font-size: 9px; color: #166534; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Receitas</p>
-                            <p style="font-size: 22px; font-weight: 900; color: #16a34a; margin: 4px 0 0 0;">${formatCurrency(inc)}</p>
+                        <div style="background: #dcfce7; padding: 10px; border-radius: 8px;">
+                            <div style="font-size: 9px; color: #166534; font-weight: 700;">Receitas</div>
+                            <div style="font-size: 18px; font-weight: 900; color: #16a34a;">${formatCurrency(inc)}</div>
                         </div>
-                        <div style="background: #fee2e2; border-radius: 12px; padding: 14px; text-align: center;">
-                            <p style="font-size: 9px; color: #991b1b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Despesas</p>
-                            <p style="font-size: 22px; font-weight: 900; color: #dc2626; margin: 4px 0 0 0;">${formatCurrency(exp)}</p>
+                        <div style="background: #fee2e2; padding: 10px; border-radius: 8px;">
+                            <div style="font-size: 9px; color: #991b1b; font-weight: 700;">Despesas</div>
+                            <div style="font-size: 18px; font-weight: 900; color: #dc2626;">${formatCurrency(exp)}</div>
                         </div>
-                        <div style="background: ${saldo >= 0 ? '#dcfce7' : '#fee2e2'}; border-radius: 12px; padding: 14px; text-align: center;">
-                            <p style="font-size: 9px; color: ${saldo >= 0 ? '#166534' : '#991b1b'}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Saldo</p>
-                            <p style="font-size: 22px; font-weight: 900; color: ${saldo >= 0 ? '#16a34a' : '#dc2626'}; margin: 4px 0 0 0;">${formatCurrency(saldo)}</p>
+                        <div style="background: ${saldo >= 0 ? '#dcfce7' : '#fee2e2'}; padding: 10px; border-radius: 8px;">
+                            <div style="font-size: 9px; color: ${saldo >= 0 ? '#166534' : '#991b1b'}; font-weight: 700;">Saldo</div>
+                            <div style="font-size: 18px; font-weight: 900; color: ${saldo >= 0 ? '#16a34a' : '#dc2626'};">${formatCurrency(saldo)}</div>
                         </div>
                     </div>
                 `;
 
+                // Lista de transações (simples)
                 if (filtered.length > 0) {
-                    element.innerHTML += `
-                        <h3 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 20px 0 12px 0;">📋 Últimas Transações</h3>
-                        <table style="width: 100%; border-collapse: collapse; font-size: 11px; background: #f8fafc; border-radius: 12px; overflow: hidden;">
-                            <thead>
-                                <tr style="background: #e2e8f0;">
-                                    <th style="padding: 10px 14px; text-align: left; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Status</th>
-                                    <th style="padding: 10px 14px; text-align: left; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Data</th>
-                                    <th style="padding: 10px 14px; text-align: left; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Descrição</th>
-                                    <th style="padding: 10px 14px; text-align: right; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Valor</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${filtered.slice(0, 20).map(t => `
-                                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                                        <td style="padding: 8px 14px; font-size: 14px;">${t.paid ? '✅' : '⏳'}</td>
-                                        <td style="padding: 8px 14px; color: #475569;">${formatDate(t.date)}</td>
-                                        <td style="padding: 8px 14px; color: #1e293b; font-weight: 500;">${t.description}</td>
-                                        <td style="padding: 8px 14px; text-align: right; font-weight: 700; color: ${categoryMeta[t.category]?.type === 'income' ? '#16a34a' : '#dc2626'};">${formatCurrency(t.amount)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                        ${filtered.length > 20 ? `<p style="color: #94a3b8; font-size: 11px; margin-top: 10px; text-align: center;">... e mais ${filtered.length - 20} transações</p>` : ''}
-                    `;
+                    html += `<div style="font-size: 13px; font-weight: 700; margin: 15px 0 8px 0;">Transações (${filtered.length})</div>`;
+                    html += `<div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">`;
+                    
+                    const maxItems = 100;
+                    filtered.slice(0, maxItems).forEach((t, index) => {
+                        const isEven = index % 2 === 0;
+                        const bgColor = isEven ? '#f8fafc' : '#ffffff';
+                        const color = categoryMeta[t.category]?.type === 'income' ? '#16a34a' : '#dc2626';
+                        const status = t.paid ? '✅' : '⏳';
+                        
+                        html += `
+                            <div style="display: grid; grid-template-columns: 30px 80px 1fr 100px; gap: 8px; padding: 6px 12px; background: ${bgColor}; border-bottom: ${index < filtered.length - 1 ? '1px solid #e2e8f0' : 'none'};">
+                                <div style="font-size: 14px;">${status}</div>
+                                <div style="color: #64748b;">${formatDate(t.date)}</div>
+                                <div style="font-weight: 500;">${t.description || '-'}</div>
+                                <div style="text-align: right; font-weight: 700; color: ${color};">${formatCurrency(t.amount || 0)}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div>`;
+                    
+                    if (filtered.length > maxItems) {
+                        html += `<div style="text-align: center; color: #94a3b8; font-size: 10px; margin-top: 6px;">... e mais ${filtered.length - maxItems} transações</div>`;
+                    }
                 } else {
-                    element.innerHTML += `<p style="text-align: center; color: #94a3b8; padding: 30px 0;">Nenhuma transação encontrada para este período.</p>`;
+                    html += `<div style="text-align: center; color: #94a3b8; padding: 20px 0;">Nenhuma transação encontrada.</div>`;
                 }
 
+                // Metas (simplificadas)
                 if (goals.length > 0) {
-                    element.innerHTML += `
-                        <h3 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 25px 0 12px 0;">🎯 Metas Financeiras</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                            ${goals.map(g => `
-                                <div style="background: #f8fafc; border-radius: 12px; padding: 14px; border-left: 4px solid ${g.color};">
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                                        <span style="font-size: 20px;">${g.icon}</span>
-                                        <span style="font-weight: 700; color: #1e293b; font-size: 13px;">${g.name}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 4px;">
-                                        <span>${formatCurrency(g.current)} / ${formatCurrency(g.target)}</span>
-                                        <span style="color: ${g.current >= g.target ? '#16a34a' : '#eab308'}; font-weight: 700;">${Math.min((g.current/g.target)*100, 100).toFixed(0)}%</span>
-                                    </div>
-                                    <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-                                        <div style="width: ${Math.min((g.current/g.target)*100, 100)}%; height: 100%; background: ${g.current >= g.target ? '#16a34a' : g.color}; border-radius: 4px;"></div>
-                                    </div>
+                    html += `<div style="font-size: 13px; font-weight: 700; margin: 15px 0 8px 0;">Metas (${goals.length})</div>`;
+                    html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">`;
+                    
+                    goals.forEach(g => {
+                        const percent = Math.min(((g.current || 0) / (g.target || 1)) * 100, 100);
+                        const isComplete = (g.current || 0) >= (g.target || 0);
+                        html += `
+                            <div style="background: #f8fafc; padding: 10px 14px; border-radius: 8px; border-left: 3px solid ${g.color || '#6366f1'};">
+                                <div style="font-weight: 700; font-size: 12px;">${g.icon || '🎯'} ${g.name || 'Meta'}</div>
+                                <div style="font-size: 10px; color: #64748b; margin: 2px 0;">${formatCurrency(g.current || 0)} / ${formatCurrency(g.target || 0)}</div>
+                                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                                    <span style="color: ${isComplete ? '#16a34a' : '#eab308'}; font-weight: 700;">${percent.toFixed(0)}%</span>
+                                    <span style="color: #94a3b8;">${isComplete ? '✅ Concluída' : `Faltam ${formatCurrency((g.target || 0) - (g.current || 0))}`}</span>
                                 </div>
-                            `).join('')}
-                        </div>
-                    `;
+                                <div style="width: 100%; height: 4px; background: #e2e8f0; border-radius: 4px; margin-top: 4px; overflow: hidden;">
+                                    <div style="width: ${percent}%; height: 100%; background: ${isComplete ? '#16a34a' : g.color || '#6366f1'}; border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div>`;
                 }
 
-                element.innerHTML += `
-                    <div style="margin-top: 30px; padding-top: 16px; border-top: 2px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 10px;">
-                        <p style="margin: 0;">Finwise - Relatório gerado automaticamente em ${new Date().toLocaleString('pt-BR')}</p>
-                        <p style="margin: 4px 0 0 0;">Todos os direitos reservados © ${new Date().getFullYear()}</p>
-                        <p style="margin: 4px 0 0 0; color: #cbd5e1; font-size: 9px;">Este relatório contém informações financeiras pessoais. Mantenha em segurança.</p>
+                // Rodapé simples
+                html += `
+                    <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 9px;">
+                        <p style="margin: 0;">Finwise - ${new Date().toLocaleString('pt-BR')}</p>
                     </div>
                 `;
+
+                content.innerHTML = html;
+                document.body.appendChild(content);
 
                 progress.style.width = '60%';
 
+                // Configurar opções do PDF
                 const opt = {
                     margin: [8, 8, 8, 8],
-                    filename: `Finwise_Relatorio_${new Date().toISOString().slice(0,10)}.pdf`,
+                    filename: `Finwise_${new Date().toISOString().slice(0,10)}.pdf`,
                     image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: {
                         scale: 2,
@@ -1833,22 +1846,22 @@
                         unit: 'mm',
                         format: 'a4',
                         orientation: 'portrait'
-                    },
-                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                    }
                 };
 
                 progress.style.width = '80%';
 
-                const worker = html2pdf().set(opt).from(element);
-                
-                worker.save().then(() => {
+                // Gerar o PDF
+                html2pdf().set(opt).from(content).save().then(() => {
                     progress.style.width = '100%';
+                    document.body.removeChild(content);
                     setTimeout(() => {
                         loading.classList.remove('active');
                         showToast('✅ PDF gerado com sucesso!', 'success');
                     }, 500);
                 }).catch((err) => {
                     console.error('Erro ao gerar PDF:', err);
+                    document.body.removeChild(content);
                     loading.classList.remove('active');
                     showToast('❌ Erro ao gerar PDF. Tente novamente.', 'error');
                 });
