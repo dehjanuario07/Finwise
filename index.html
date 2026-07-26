@@ -984,7 +984,7 @@
         </div>
     </div>
 
-    <!-- MODALS -->
+    <!-- MODAIS -->
     <div id="editModal" class="modal fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-[2rem] p-6 max-w-md w-full shadow-2xl max-h-[95vh] overflow-y-auto custom-scrollbar">
             <h3 class="text-white font-extrabold text-lg text-center mb-6">
@@ -1380,9 +1380,7 @@
 
         <!-- DASHBOARD TAB -->
         <section id="dashboardTab" class="tab-content active">
-            <div class="bento-grid" id="dashboardGrid">
-                <!-- Cards serão renderizados dinamicamente -->
-            </div>
+            <div class="bento-grid" id="dashboardGrid"></div>
         </section>
 
         <!-- LANÇAMENTOS TAB -->
@@ -1603,9 +1601,7 @@
 
         <!-- RELATÓRIOS TAB -->
         <section id="relatoriosTab" class="tab-content">
-            <div class="reports-grid" id="reportsGrid">
-                <!-- Os gráficos serão inseridos dinamicamente -->
-            </div>
+            <div class="reports-grid" id="reportsGrid"></div>
         </section>
 
         <!-- COMPARAÇÃO TAB -->
@@ -1677,7 +1673,6 @@
             'outros': { name: 'Outros', icon: '📌', color: '#94a3b8', type: 'expense' }
         };
 
-        // Tags system
         let availableTags = JSON.parse(localStorage.getItem('finwise_tags')) || ['essencial', 'luxo', 'investimento', 'urgente', 'planejado'];
 
         const filterMonth = document.getElementById('monthFilter');
@@ -1705,27 +1700,30 @@
             setTimeout(() => {
                 progress.style.width = '40%';
                 
-                // Criar conteúdo do PDF
                 const element = document.createElement('div');
                 element.style.cssText = `
-                    padding: 40px;
-                    background: #020617;
-                    color: #e2e8f0;
-                    font-family: 'Plus Jakarta Sans', sans-serif;
-                    max-width: 1200px;
+                    padding: 30px;
+                    background: #ffffff;
+                    color: #1e293b;
+                    font-family: 'Arial', 'Helvetica', sans-serif;
+                    max-width: 1100px;
                     margin: 0 auto;
+                    font-size: 12px;
                 `;
                 
-                // Cabeçalho
+                const month = filterMonth.value;
+                const [year, monthNum] = month.split('-').map(Number);
+                const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                const mesNome = monthNames[monthNum - 1];
+                
                 element.innerHTML = `
-                    <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid rgba(99,102,241,0.2); padding-bottom: 30px;">
-                        <h1 style="font-size: 32px; font-weight: 900; background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Finwise</h1>
-                        <p style="color: #64748b; font-size: 14px; margin-top: 8px;">Relatório Financeiro - ${new Date().toLocaleDateString('pt-BR')}</p>
+                    <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #6366f1; padding-bottom: 20px;">
+                        <h1 style="font-size: 28px; font-weight: 900; color: #6366f1; margin: 0;">Finwise</h1>
+                        <p style="color: #64748b; font-size: 14px; margin-top: 4px; font-weight: 600;">Relatório Financeiro</p>
+                        <p style="color: #94a3b8; font-size: 12px; margin-top: 2px;">${mesNome} ${year} - Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
                     </div>
                 `;
 
-                // Resumo do mês
-                const month = filterMonth.value;
                 const filtered = transactions.filter(t => t.date.startsWith(month));
                 const inc = filtered.filter(t => categoryMeta[t.category]?.type === 'income').reduce((s, t) => s + t.amount, 0);
                 const exp = filtered.filter(t => categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0);
@@ -1734,77 +1732,75 @@
                 const paid = filtered.filter(t => t.paid).length;
 
                 element.innerHTML += `
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 32px;">
-                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center;">
-                            <p style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Total</p>
-                            <p style="font-size: 20px; font-weight: 900; color: white; margin-top: 4px;">${total}</p>
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 30px;">
+                        <div style="background: #f1f5f9; border-radius: 12px; padding: 14px; text-align: center;">
+                            <p style="font-size: 9px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Total</p>
+                            <p style="font-size: 22px; font-weight: 900; color: #1e293b; margin: 4px 0 0 0;">${total}</p>
                         </div>
-                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center;">
-                            <p style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Pagos</p>
-                            <p style="font-size: 20px; font-weight: 900; color: #10b981; margin-top: 4px;">${paid}</p>
+                        <div style="background: #dcfce7; border-radius: 12px; padding: 14px; text-align: center;">
+                            <p style="font-size: 9px; color: #166534; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Pagos</p>
+                            <p style="font-size: 22px; font-weight: 900; color: #16a34a; margin: 4px 0 0 0;">${paid}</p>
                         </div>
-                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center;">
-                            <p style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Receitas</p>
-                            <p style="font-size: 20px; font-weight: 900; color: #10b981; margin-top: 4px;">${formatCurrency(inc)}</p>
+                        <div style="background: #dcfce7; border-radius: 12px; padding: 14px; text-align: center;">
+                            <p style="font-size: 9px; color: #166534; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Receitas</p>
+                            <p style="font-size: 22px; font-weight: 900; color: #16a34a; margin: 4px 0 0 0;">${formatCurrency(inc)}</p>
                         </div>
-                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center;">
-                            <p style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Despesas</p>
-                            <p style="font-size: 20px; font-weight: 900; color: #f43f5e; margin-top: 4px;">${formatCurrency(exp)}</p>
+                        <div style="background: #fee2e2; border-radius: 12px; padding: 14px; text-align: center;">
+                            <p style="font-size: 9px; color: #991b1b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Despesas</p>
+                            <p style="font-size: 22px; font-weight: 900; color: #dc2626; margin: 4px 0 0 0;">${formatCurrency(exp)}</p>
                         </div>
-                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center;">
-                            <p style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Saldo</p>
-                            <p style="font-size: 20px; font-weight: 900; color: ${saldo >= 0 ? '#10b981' : '#f43f5e'}; margin-top: 4px;">${formatCurrency(saldo)}</p>
+                        <div style="background: ${saldo >= 0 ? '#dcfce7' : '#fee2e2'}; border-radius: 12px; padding: 14px; text-align: center;">
+                            <p style="font-size: 9px; color: ${saldo >= 0 ? '#166534' : '#991b1b'}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Saldo</p>
+                            <p style="font-size: 22px; font-weight: 900; color: ${saldo >= 0 ? '#16a34a' : '#dc2626'}; margin: 4px 0 0 0;">${formatCurrency(saldo)}</p>
                         </div>
                     </div>
                 `;
 
-                // Tabela de transações
                 if (filtered.length > 0) {
                     element.innerHTML += `
-                        <h3 style="font-size: 16px; font-weight: 800; color: white; margin-bottom: 16px;">📋 Últimas Transações</h3>
-                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; background: rgba(15,23,42,0.5); border-radius: 16px; overflow: hidden;">
+                        <h3 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 20px 0 12px 0;">📋 Últimas Transações</h3>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 11px; background: #f8fafc; border-radius: 12px; overflow: hidden;">
                             <thead>
-                                <tr style="background: rgba(15,23,42,0.8);">
-                                    <th style="padding: 12px 16px; text-align: left; color: #64748b; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Status</th>
-                                    <th style="padding: 12px 16px; text-align: left; color: #64748b; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Data</th>
-                                    <th style="padding: 12px 16px; text-align: left; color: #64748b; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Descrição</th>
-                                    <th style="padding: 12px 16px; text-align: right; color: #64748b; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Valor</th>
+                                <tr style="background: #e2e8f0;">
+                                    <th style="padding: 10px 14px; text-align: left; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Status</th>
+                                    <th style="padding: 10px 14px; text-align: left; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Data</th>
+                                    <th style="padding: 10px 14px; text-align: left; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Descrição</th>
+                                    <th style="padding: 10px 14px; text-align: right; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Valor</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${filtered.slice(0, 20).map(t => `
-                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                        <td style="padding: 10px 16px;">${t.paid ? '✅' : '⏳'}</td>
-                                        <td style="padding: 10px 16px; color: #94a3b8;">${formatDate(t.date)}</td>
-                                        <td style="padding: 10px 16px; color: #e2e8f0;">${t.description}</td>
-                                        <td style="padding: 10px 16px; text-align: right; font-weight: 700; color: ${categoryMeta[t.category]?.type === 'income' ? '#10b981' : '#f43f5e'};">${formatCurrency(t.amount)}</td>
+                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                        <td style="padding: 8px 14px; font-size: 14px;">${t.paid ? '✅' : '⏳'}</td>
+                                        <td style="padding: 8px 14px; color: #475569;">${formatDate(t.date)}</td>
+                                        <td style="padding: 8px 14px; color: #1e293b; font-weight: 500;">${t.description}</td>
+                                        <td style="padding: 8px 14px; text-align: right; font-weight: 700; color: ${categoryMeta[t.category]?.type === 'income' ? '#16a34a' : '#dc2626'};">${formatCurrency(t.amount)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                         </table>
-                        ${filtered.length > 20 ? `<p style="color: #64748b; font-size: 11px; margin-top: 12px; text-align: center;">... e mais ${filtered.length - 20} transações</p>` : ''}
+                        ${filtered.length > 20 ? `<p style="color: #94a3b8; font-size: 11px; margin-top: 10px; text-align: center;">... e mais ${filtered.length - 20} transações</p>` : ''}
                     `;
                 } else {
-                    element.innerHTML += `<p style="text-align: center; color: #64748b; padding: 40px 0;">Nenhuma transação encontrada para este período.</p>`;
+                    element.innerHTML += `<p style="text-align: center; color: #94a3b8; padding: 30px 0;">Nenhuma transação encontrada para este período.</p>`;
                 }
 
-                // Metas
                 if (goals.length > 0) {
                     element.innerHTML += `
-                        <h3 style="font-size: 16px; font-weight: 800; color: white; margin: 32px 0 16px;">🎯 Metas Financeiras</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                        <h3 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 25px 0 12px 0;">🎯 Metas Financeiras</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
                             ${goals.map(g => `
-                                <div style="background: rgba(15,23,42,0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px;">
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                        <span style="font-size: 24px;">${g.icon}</span>
-                                        <span style="font-weight: 700; color: white;">${g.name}</span>
+                                <div style="background: #f8fafc; border-radius: 12px; padding: 14px; border-left: 4px solid ${g.color};">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                        <span style="font-size: 20px;">${g.icon}</span>
+                                        <span style="font-weight: 700; color: #1e293b; font-size: 13px;">${g.name}</span>
                                     </div>
-                                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 4px;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 4px;">
                                         <span>${formatCurrency(g.current)} / ${formatCurrency(g.target)}</span>
-                                        <span style="color: ${g.current >= g.target ? '#10b981' : '#f59e0b'};">${Math.min((g.current/g.target)*100, 100).toFixed(0)}%</span>
+                                        <span style="color: ${g.current >= g.target ? '#16a34a' : '#eab308'}; font-weight: 700;">${Math.min((g.current/g.target)*100, 100).toFixed(0)}%</span>
                                     </div>
-                                    <div style="width: 100%; height: 4px; background: #1e293b; border-radius: 4px; overflow: hidden;">
-                                        <div style="width: ${Math.min((g.current/g.target)*100, 100)}%; height: 100%; background: ${g.current >= g.target ? '#10b981' : g.color}; border-radius: 4px;"></div>
+                                    <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                                        <div style="width: ${Math.min((g.current/g.target)*100, 100)}%; height: 100%; background: ${g.current >= g.target ? '#16a34a' : g.color}; border-radius: 4px;"></div>
                                     </div>
                                 </div>
                             `).join('')}
@@ -1812,26 +1808,26 @@
                     `;
                 }
 
-                // Rodapé
                 element.innerHTML += `
-                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); text-align: center; color: #475569; font-size: 11px;">
-                        <p>Finwise - Relatório gerado automaticamente em ${new Date().toLocaleString('pt-BR')}</p>
-                        <p style="margin-top: 4px;">Todos os direitos reservados © ${new Date().getFullYear()}</p>
+                    <div style="margin-top: 30px; padding-top: 16px; border-top: 2px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 10px;">
+                        <p style="margin: 0;">Finwise - Relatório gerado automaticamente em ${new Date().toLocaleString('pt-BR')}</p>
+                        <p style="margin: 4px 0 0 0;">Todos os direitos reservados © ${new Date().getFullYear()}</p>
+                        <p style="margin: 4px 0 0 0; color: #cbd5e1; font-size: 9px;">Este relatório contém informações financeiras pessoais. Mantenha em segurança.</p>
                     </div>
                 `;
 
-                progress.style.width = '70%';
+                progress.style.width = '60%';
 
-                // Configurar e gerar PDF
                 const opt = {
-                    margin: [10, 10, 10, 10],
+                    margin: [8, 8, 8, 8],
                     filename: `Finwise_Relatorio_${new Date().toISOString().slice(0,10)}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
+                    image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: {
                         scale: 2,
-                        backgroundColor: '#020617',
+                        useCORS: true,
                         logging: false,
-                        useCORS: true
+                        backgroundColor: '#ffffff',
+                        letterRendering: true
                     },
                     jsPDF: {
                         unit: 'mm',
@@ -1841,9 +1837,11 @@
                     pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
                 };
 
-                progress.style.width = '90%';
+                progress.style.width = '80%';
 
-                html2pdf().set(opt).from(element).save().then(() => {
+                const worker = html2pdf().set(opt).from(element);
+                
+                worker.save().then(() => {
                     progress.style.width = '100%';
                     setTimeout(() => {
                         loading.classList.remove('active');
@@ -1856,6 +1854,37 @@
                 });
 
             }, 300);
+        }
+
+        // ============ FUNÇÕES AUXILIARES ============
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle', warning: 'fa-triangle-exclamation' };
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<div class="flex items-center gap-3"><i class="fas ${icons[type] || icons.info}"></i><span>${message}</span></div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 500); }, 3500);
+        }
+
+        function formatDate(dateStr) {
+            if(!dateStr) return "-";
+            const [y, m, d] = dateStr.split('-'); return `${d}/${m}/${y}`;
+        }
+
+        function parseAmount(val) {
+            if (!val) return 0; 
+            return parseFloat(val.replace(/\./g, '').replace(',', '.'));
+        }
+
+        function formatCurrency(value) { 
+            return `R$ ${value.toLocaleString('pt-PT', currencyConfig)}`; 
+        }
+
+        function closeModal(id) { 
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active'); 
         }
 
         // ============ TAGS SYSTEM ============
@@ -2104,31 +2133,6 @@
                         .sort((a, b) => a[1].name.localeCompare(b[1].name))
                         .map(([k, cat]) => `<option value="${k}" ${k === filterVal ? 'selected' : ''}>${cat.icon} ${cat.name}</option>`).join('');
             }
-        }
-
-        // ============ CORE FUNCTIONS ============
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle', warning: 'fa-triangle-exclamation' };
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<div class="flex items-center gap-3"><i class="fas ${icons[type] || icons.info}"></i><span>${message}</span></div>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 100);
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 500); }, 3500);
-        }
-
-        function formatDate(dateStr) {
-            if(!dateStr) return "-";
-            const [y, m, d] = dateStr.split('-'); return `${d}/${m}/${y}`;
-        }
-        function parseAmount(val) {
-            if (!val) return 0; return parseFloat(val.replace(/\./g, '').replace(',', '.'));
-        }
-        function formatCurrency(value) { return `R$ ${value.toLocaleString('pt-PT', currencyConfig)}`; }
-        function closeModal(id) { 
-            const el = document.getElementById(id);
-            if (el) el.classList.remove('active'); 
         }
 
         // ============ CATEGORY ANALYSIS ============
@@ -2828,7 +2832,6 @@
             const grid = document.getElementById('dashboardGrid');
             const month = filterMonth.value;
             
-            // TODAS as transações do mês (para o saldo geral - NÃO diminui ao pagar)
             const allMonthly = transactions.filter(t => t.date.startsWith(month));
             let totalInc = 0, totalExp = 0;
             allMonthly.forEach(t => {
@@ -2837,7 +2840,6 @@
             });
             const totalBalance = totalInc - totalExp;
 
-            // Transações do mês (apenas pendentes para ganhos e gastos pendentes)
             const pendingMonthly = transactions.filter(t => t.date.startsWith(month) && !t.paid);
             let pendInc = 0, pendExp = 0;
             pendingMonthly.forEach(t => { 
@@ -2845,7 +2847,6 @@
                 else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') pendExp += t.amount;
             });
 
-            // Calcular tendência do saldo (comparação com mês anterior)
             const prevMonth = new Date(month);
             prevMonth.setMonth(prevMonth.getMonth() - 1);
             const prevKey = prevMonth.toISOString().slice(0, 7);
@@ -2889,7 +2890,6 @@
                 }
             }
 
-            // Build dashboard cards
             const cards = [
                 { id: 'balance', className: 'col-span-full lg:col-span-2 border-l-4 border-l-cyan-400', content: `
                     <div class="flex justify-between items-center mb-2">
@@ -2982,7 +2982,6 @@
                 </div>
             `).join('');
 
-            // Populate recent activity (apenas pendentes)
             document.getElementById('latestActivity').innerHTML = [...pendingMonthly]
                 .sort((a,b) => b.id - a.id).slice(0, 10)
                 .map(t => {
@@ -3108,7 +3107,6 @@
                 rows.push({ cat, current, prev, variation, type });
             });
             
-            // Ordenar por categoria
             rows.sort((a, b) => {
                 const nameA = categoryMeta[a.cat]?.name || a.cat;
                 const nameB = categoryMeta[b.cat]?.name || b.cat;
@@ -3179,7 +3177,6 @@
             const grid = document.getElementById('reportsGrid');
             grid.innerHTML = '';
 
-            // Summary Card
             const summaryCard = document.createElement('div');
             summaryCard.className = 'report-card full-width';
             summaryCard.innerHTML = `
@@ -3198,7 +3195,6 @@
             `;
             grid.appendChild(summaryCard);
 
-            // Stats
             const statsCard = document.createElement('div');
             statsCard.className = 'report-card full-width';
             statsCard.innerHTML = `
@@ -3210,7 +3206,6 @@
             `;
             grid.appendChild(statsCard);
 
-            // Stacked Area
             const areaCard = document.createElement('div');
             areaCard.className = 'report-card full-width';
             areaCard.innerHTML = `
@@ -3224,7 +3219,6 @@
             `;
             grid.appendChild(areaCard);
 
-            // Waterfall
             const waterfallCard = document.createElement('div');
             waterfallCard.className = 'report-card full-width';
             waterfallCard.innerHTML = `
@@ -3277,7 +3271,6 @@
 
             gerarResumoContador(month, filtered, inc, exp, total, paid);
 
-            // Stacked Area
             const months = [];
             const incomeData = [];
             const expenseData = [];
@@ -3315,7 +3308,6 @@
                 }
             });
 
-            // Waterfall
             const expenses = {};
             filtered.forEach(t => {
                 if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
@@ -3332,7 +3324,6 @@
             });
             const totalExpenses = waterValues.reduce((a, b) => a + b, 0);
             
-            // Categorias individuais + divisor + total
             const waterfallData = [...waterValues, totalExpenses];
             const waterfallLabels = [...waterLabels, 'TOTAL DE GASTOS'];
             const waterfallColors = [...waterColors, '#f43f5e'];
@@ -3523,7 +3514,6 @@
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = tomorrow.toISOString().slice(0, 10);
 
-            // Due today
             const dueToday = transactions.filter(t => 
                 t.date === todayStr && 
                 !t.paid &&
@@ -3540,7 +3530,6 @@
                 }
             }
 
-            // Due tomorrow
             const dueTomorrow = transactions.filter(t => 
                 t.date === tomorrowStr && 
                 !t.paid &&
@@ -3551,7 +3540,6 @@
                 showToast(`📅 ${dueTomorrow.length} contas vencem amanhã! Total: ${formatCurrency(total)}`, 'info');
             }
 
-            // Goals at risk
             goals.forEach(g => {
                 if (g.deadline) {
                     const daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / (1000 * 60 * 60 * 24));
@@ -3712,19 +3700,16 @@
             renderCalendar();
             renderTags();
             
-            // Event listeners
             document.getElementById('searchFilter').oninput = renderAll;
             document.getElementById('categoryFilter').onchange = renderAll;
             document.getElementById('statusFilter').onchange = renderAll;
             document.getElementById('tagFilter').onchange = renderAll;
             document.getElementById('compareMonthSelect').onchange = renderComparison;
             
-            // Notification permissions
             if (Notification.permission === 'default') {
                 Notification.requestPermission();
             }
             
-            // Check notifications on load and every hour
             setTimeout(checkNotifications, 3000);
             setInterval(checkNotifications, 3600000);
         };
