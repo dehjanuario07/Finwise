@@ -1690,7 +1690,7 @@
         const currencyConfig = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
         const isMobile = window.innerWidth < 768;
 
-        // ============ EXPORTAÇÃO PARA PDF SIMPLIFICADA ============
+        // ============ EXPORTAÇÃO PARA PDF ============
         function exportarParaPDF() {
             const loading = document.getElementById('pdfLoading');
             const progress = document.getElementById('pdfProgress');
@@ -1699,20 +1699,6 @@
 
             setTimeout(() => {
                 progress.style.width = '40%';
-                
-                // Criar o conteúdo do PDF em uma div separada
-                const content = document.createElement('div');
-                content.id = 'pdfContent';
-                content.style.cssText = `
-                    padding: 30px;
-                    background: #ffffff;
-                    color: #1e293b;
-                    font-family: Arial, Helvetica, sans-serif;
-                    max-width: 1000px;
-                    margin: 0 auto;
-                    font-size: 11px;
-                    line-height: 1.5;
-                `;
                 
                 const month = filterMonth.value;
                 const [year, monthNum] = month.split('-').map(Number);
@@ -1825,12 +1811,17 @@
                     </div>
                 `;
 
-                content.innerHTML = html;
-                document.body.appendChild(content);
+                // 1. O SEGREDO ESTÁ AQUI: Envolver todo o HTML gerado em um contêiner com estilo completo.
+                // Isso elimina a necessidade de injetar (appendChild) no DOM físico.
+                const finalHtmlWrapper = `
+                    <div style="padding: 30px; background: #ffffff; color: #1e293b; font-family: Arial, Helvetica, sans-serif; max-width: 1000px; margin: 0 auto; font-size: 11px; line-height: 1.5;">
+                        ${html}
+                    </div>
+                `;
 
                 progress.style.width = '60%';
 
-                // Configurar opções do PDF
+                // 2. Opções com ajustes pontuais de scrollY e windowY
                 const opt = {
                     margin: [8, 8, 8, 8],
                     filename: `Finwise_${new Date().toISOString().slice(0,10)}.pdf`,
@@ -1840,7 +1831,8 @@
                         useCORS: true,
                         logging: false,
                         backgroundColor: '#ffffff',
-                        letterRendering: true
+                        scrollY: 0, // Ignora o scroll atual do usuário
+                        windowY: 0
                     },
                     jsPDF: {
                         unit: 'mm',
@@ -1851,17 +1843,15 @@
 
                 progress.style.width = '80%';
 
-                // Gerar o PDF
-                html2pdf().set(opt).from(content).save().then(() => {
+                // 3. Passar a string HTML diretamente para o from()
+                html2pdf().set(opt).from(finalHtmlWrapper).save().then(() => {
                     progress.style.width = '100%';
-                    document.body.removeChild(content);
                     setTimeout(() => {
                         loading.classList.remove('active');
                         showToast('✅ PDF gerado com sucesso!', 'success');
                     }, 500);
                 }).catch((err) => {
                     console.error('Erro ao gerar PDF:', err);
-                    document.body.removeChild(content);
                     loading.classList.remove('active');
                     showToast('❌ Erro ao gerar PDF. Tente novamente.', 'error');
                 });
