@@ -6,7 +6,7 @@
     <title>Finwise - Intelligent Finance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
@@ -894,9 +894,9 @@
             .trend-indicator .trend-value { font-size: 0.7rem; }
         }
 
-        /* ===== POWER BI BUTTON ===== */
-        .btn-powerbi {
-            background: linear-gradient(135deg, #10b981, #059669);
+        /* ===== PDF BUTTON ===== */
+        .btn-pdf {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 1rem;
@@ -908,20 +908,81 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
         }
 
-        .btn-powerbi:hover {
+        .btn-pdf:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 12px 35px rgba(239, 68, 68, 0.4);
         }
 
-        .btn-powerbi i {
+        .btn-pdf i {
             font-size: 1.1rem;
+        }
+
+        /* ===== PDF LOADING OVERLAY ===== */
+        #pdfLoading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 6, 23, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        #pdfLoading.active {
+            display: flex;
+        }
+        #pdfLoading .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #pdfLoading p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        #pdfLoading .progress-bar {
+            width: 300px;
+            max-width: 80%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #pdfLoading .progress-bar .fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6366f1, #ec4899);
+            border-radius: 4px;
+            transition: width 0.3s ease;
         }
     </style>
 </head>
 <body>
+
+    <!-- PDF LOADING OVERLAY -->
+    <div id="pdfLoading">
+        <div class="spinner"></div>
+        <p>Gerando PDF...</p>
+        <div class="progress-bar">
+            <div class="fill" id="pdfProgress"></div>
+        </div>
+    </div>
 
     <!-- MODALS -->
     <div id="editModal" class="modal fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md items-center justify-center p-4">
@@ -1284,8 +1345,8 @@
                 <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-xl px-4 py-1.5 shadow-inner">
                     <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Período:</span>
                     <input type="month" id="monthFilter" class="bg-transparent text-indigo-400 text-xs font-bold outline-none">
-                    <button onclick="exportarParaPowerBI()" class="btn-powerbi ml-2">
-                        <i class="fas fa-file-excel"></i> Exportar Power BI
+                    <button onclick="exportarParaPDF()" class="btn-pdf">
+                        <i class="fas fa-file-pdf"></i> Exportar PDF
                     </button>
                 </div>
 
@@ -1634,141 +1695,167 @@
         const currencyConfig = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
         const isMobile = window.innerWidth < 768;
 
-        // ============ EXPORTAÇÃO PARA POWER BI ============
-        function exportarParaPowerBI() {
-            // 1. Recupera as transações salvas no localStorage
-            const transacoesSalvas = JSON.parse(localStorage.getItem('finwise_db') || '[]');
-            
-            if (transacoesSalvas.length === 0) {
-                showToast('Nenhuma transação encontrada para exportar.', 'error');
-                return;
-            }
+        // ============ EXPORTAÇÃO PARA PDF ============
+        function exportarParaPDF() {
+            const loading = document.getElementById('pdfLoading');
+            const progress = document.getElementById('pdfProgress');
+            loading.classList.add('active');
+            progress.style.width = '20%';
 
-            // 2. Mapeia e padroniza os dados para a Tabela Fato
-            const dadosFato = transacoesSalvas.map((t, index) => {
-                // Determina o tipo baseado na categoria
-                const tipo = categoryMeta[t.category]?.type || 
-                            (t.amount >= 0 ? 'Receita' : 'Despesa');
+            setTimeout(() => {
+                progress.style.width = '40%';
                 
-                // Formata a data para padrão brasileiro
-                const dataFormatada = t.date ? 
-                    t.date.split('-').reverse().join('/') : 
-                    new Date().toLocaleDateString('pt-BR');
+                // Criar conteúdo do PDF
+                const element = document.createElement('div');
+                element.style.cssText = `
+                    padding: 40px;
+                    background: #020617;
+                    color: #e2e8f0;
+                    font-family: 'Plus Jakarta Sans', sans-serif;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                `;
+                
+                // Cabeçalho
+                element.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid rgba(99,102,241,0.2); padding-bottom: 30px;">
+                        <h1 style="font-size: 32px; font-weight: 900; background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Finwise</h1>
+                        <p style="color: #64748b; font-size: 14px; margin-top: 8px;">Relatório Financeiro - ${new Date().toLocaleDateString('pt-BR')}</p>
+                    </div>
+                `;
 
-                return {
-                    ID_Transacao: `T${String(index + 1).padStart(4, '0')}`,
-                    Data_Registro: t.date || '',
-                    Data_Formatada: dataFormatada,
-                    Descricao: t.description || '',
-                    Categoria: categoryMeta[t.category]?.name || t.category || 'Geral',
-                    Categoria_Key: t.category || 'geral',
-                    Tipo: tipo === 'income' ? 'Receita' : 'Despesa',
-                    Valor: Number(t.amount || 0),
-                    Status: t.paid ? 'Pago' : 'Pendente',
-                    Grupo: t.groupId ? 'Recorrente' : 'Único',
-                    Tags: (t.tags || []).join('; '),
-                    Ano: t.date ? t.date.split('-')[0] : '',
-                    Mes: t.date ? t.date.split('-')[1] : '',
-                    Dia: t.date ? t.date.split('-')[2] : ''
+                // Resumo do mês
+                const month = filterMonth.value;
+                const filtered = transactions.filter(t => t.date.startsWith(month));
+                const inc = filtered.filter(t => categoryMeta[t.category]?.type === 'income').reduce((s, t) => s + t.amount, 0);
+                const exp = filtered.filter(t => categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0);
+                const saldo = inc - exp;
+                const total = filtered.length;
+                const paid = filtered.filter(t => t.paid).length;
+
+                element.innerHTML += `
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 32px;">
+                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center;">
+                            <p style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Total</p>
+                            <p style="font-size: 20px; font-weight: 900; color: white; margin-top: 4px;">${total}</p>
+                        </div>
+                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center;">
+                            <p style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Pagos</p>
+                            <p style="font-size: 20px; font-weight: 900; color: #10b981; margin-top: 4px;">${paid}</p>
+                        </div>
+                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center;">
+                            <p style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Receitas</p>
+                            <p style="font-size: 20px; font-weight: 900; color: #10b981; margin-top: 4px;">${formatCurrency(inc)}</p>
+                        </div>
+                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center;">
+                            <p style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Despesas</p>
+                            <p style="font-size: 20px; font-weight: 900; color: #f43f5e; margin-top: 4px;">${formatCurrency(exp)}</p>
+                        </div>
+                        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; text-align: center;">
+                            <p style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Saldo</p>
+                            <p style="font-size: 20px; font-weight: 900; color: ${saldo >= 0 ? '#10b981' : '#f43f5e'}; margin-top: 4px;">${formatCurrency(saldo)}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Tabela de transações
+                if (filtered.length > 0) {
+                    element.innerHTML += `
+                        <h3 style="font-size: 16px; font-weight: 800; color: white; margin-bottom: 16px;">📋 Últimas Transações</h3>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; background: rgba(15,23,42,0.5); border-radius: 16px; overflow: hidden;">
+                            <thead>
+                                <tr style="background: rgba(15,23,42,0.8);">
+                                    <th style="padding: 12px 16px; text-align: left; color: #64748b; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Status</th>
+                                    <th style="padding: 12px 16px; text-align: left; color: #64748b; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Data</th>
+                                    <th style="padding: 12px 16px; text-align: left; color: #64748b; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Descrição</th>
+                                    <th style="padding: 12px 16px; text-align: right; color: #64748b; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${filtered.slice(0, 20).map(t => `
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                        <td style="padding: 10px 16px;">${t.paid ? '✅' : '⏳'}</td>
+                                        <td style="padding: 10px 16px; color: #94a3b8;">${formatDate(t.date)}</td>
+                                        <td style="padding: 10px 16px; color: #e2e8f0;">${t.description}</td>
+                                        <td style="padding: 10px 16px; text-align: right; font-weight: 700; color: ${categoryMeta[t.category]?.type === 'income' ? '#10b981' : '#f43f5e'};">${formatCurrency(t.amount)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        ${filtered.length > 20 ? `<p style="color: #64748b; font-size: 11px; margin-top: 12px; text-align: center;">... e mais ${filtered.length - 20} transações</p>` : ''}
+                    `;
+                } else {
+                    element.innerHTML += `<p style="text-align: center; color: #64748b; padding: 40px 0;">Nenhuma transação encontrada para este período.</p>`;
+                }
+
+                // Metas
+                if (goals.length > 0) {
+                    element.innerHTML += `
+                        <h3 style="font-size: 16px; font-weight: 800; color: white; margin: 32px 0 16px;">🎯 Metas Financeiras</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                            ${goals.map(g => `
+                                <div style="background: rgba(15,23,42,0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                        <span style="font-size: 24px;">${g.icon}</span>
+                                        <span style="font-weight: 700; color: white;">${g.name}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 4px;">
+                                        <span>${formatCurrency(g.current)} / ${formatCurrency(g.target)}</span>
+                                        <span style="color: ${g.current >= g.target ? '#10b981' : '#f59e0b'};">${Math.min((g.current/g.target)*100, 100).toFixed(0)}%</span>
+                                    </div>
+                                    <div style="width: 100%; height: 4px; background: #1e293b; border-radius: 4px; overflow: hidden;">
+                                        <div style="width: ${Math.min((g.current/g.target)*100, 100)}%; height: 100%; background: ${g.current >= g.target ? '#10b981' : g.color}; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                // Rodapé
+                element.innerHTML += `
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); text-align: center; color: #475569; font-size: 11px;">
+                        <p>Finwise - Relatório gerado automaticamente em ${new Date().toLocaleString('pt-BR')}</p>
+                        <p style="margin-top: 4px;">Todos os direitos reservados © ${new Date().getFullYear()}</p>
+                    </div>
+                `;
+
+                progress.style.width = '70%';
+
+                // Configurar e gerar PDF
+                const opt = {
+                    margin: [10, 10, 10, 10],
+                    filename: `Finwise_Relatorio_${new Date().toISOString().slice(0,10)}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        backgroundColor: '#020617',
+                        logging: false,
+                        useCORS: true
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'a4',
+                        orientation: 'portrait'
+                    },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
                 };
-            });
 
-            // 3. Cria a Tabela Dimensão de Categorias
-            const categoriasUnicas = [...new Set(dadosFato.map(t => t.Categoria))];
-            const dadosDimCategoria = categoriasUnicas.map((cat, index) => {
-                const trans = dadosFato.find(t => t.Categoria === cat);
-                const meta = Object.values(categoryMeta).find(m => m.name === cat);
-                return {
-                    ID_Categoria: `C${String(index + 1).padStart(2, '0')}`,
-                    Nome_Categoria: cat,
-                    Tipo_Categoria: trans?.Tipo || 'Despesa',
-                    Cor: meta?.color || '#94a3b8',
-                    Icone: meta?.icon || '📌'
-                };
-            });
+                progress.style.width = '90%';
 
-            // 4. Cria Tabela Dimensão de Tempo (opcional)
-            const datasUnicas = [...new Set(dadosFato.map(t => t.Data_Registro))].sort();
-            const dadosDimTempo = datasUnicas.map((data, index) => {
-                const parts = data.split('-');
-                return {
-                    ID_Tempo: `D${String(index + 1).padStart(3, '0')}`,
-                    Data_Completa: data,
-                    Ano: parts[0] || '',
-                    Mes: parts[1] || '',
-                    Dia: parts[2] || '',
-                    Trimestre: parts[1] ? `T${Math.ceil(parseInt(parts[1]) / 3)}` : '',
-                    Semana: parts[1] ? `Sem ${Math.ceil(parseInt(parts[2]) / 7)}` : ''
-                };
-            });
+                html2pdf().set(opt).from(element).save().then(() => {
+                    progress.style.width = '100%';
+                    setTimeout(() => {
+                        loading.classList.remove('active');
+                        showToast('✅ PDF gerado com sucesso!', 'success');
+                    }, 500);
+                }).catch((err) => {
+                    console.error('Erro ao gerar PDF:', err);
+                    loading.classList.remove('active');
+                    showToast('❌ Erro ao gerar PDF. Tente novamente.', 'error');
+                });
 
-            // 5. Monta o arquivo Excel (.xlsx) com múltiplas abas (Modelo Estrela)
-            const wb = XLSX.utils.book_new();
-
-            const wsFato = XLSX.utils.json_to_sheet(dadosFato);
-            const wsDimCat = XLSX.utils.json_to_sheet(dadosDimCategoria);
-            const wsDimTempo = XLSX.utils.json_to_sheet(dadosDimTempo);
-
-            // Ajusta largura das colunas automaticamente
-            const colWidths = [
-                { wch: 15 },  // ID_Transacao
-                { wch: 15 },  // Data_Registro
-                { wch: 15 },  // Data_Formatada
-                { wch: 30 },  // Descricao
-                { wch: 20 },  // Categoria
-                { wch: 15 },  // Categoria_Key
-                { wch: 12 },  // Tipo
-                { wch: 15 },  // Valor
-                { wch: 12 },  // Status
-                { wch: 12 },  // Grupo
-                { wch: 20 },  // Tags
-                { wch: 6 },   // Ano
-                { wch: 6 },   // Mes
-                { wch: 6 }    // Dia
-            ];
-            wsFato['!cols'] = colWidths;
-
-            XLSX.utils.book_append_sheet(wb, wsFato, "Fato_Transacoes");
-            XLSX.utils.book_append_sheet(wb, wsDimCat, "Dim_Categorias");
-            XLSX.utils.book_append_sheet(wb, wsDimTempo, "Dim_Tempo");
-
-            // 6. Adiciona uma aba com instruções para o Power BI
-            const instrucoes = [
-                ['📊 FINWISE - EXPORTAÇÃO PARA POWER BI'],
-                [''],
-                ['🔗 MODELO ESTRELA:'],
-                ['- Fato_Transacoes: Tabela de fatos com todas as transações'],
-                ['- Dim_Categorias: Dimensão de categorias (relação 1:N)'],
-                ['- Dim_Tempo: Dimensão de tempo (relação 1:N)'],
-                [''],
-                ['📌 RELACIONAMENTOS SUGERIDOS:'],
-                ['1. Fato_Transacoes.Categoria_Key → Dim_Categorias.ID_Categoria'],
-                ['2. Fato_Transacoes.Data_Registro → Dim_Tempo.Data_Completa'],
-                [''],
-                ['📈 MÉTRICAS RECOMENDADAS:'],
-                ['- Total de Receitas: SUM(Valor) WHERE Tipo = "Receita"'],
-                ['- Total de Despesas: SUM(Valor) WHERE Tipo = "Despesa"'],
-                ['- Saldo: SUM(Valor)'],
-                ['- Média Diária: AVERAGE(Valor)'],
-                [''],
-                ['📅 DASHBOARDS SUGERIDOS:'],
-                ['- Evolução Mensal (linha)'],
-                ['- Gastos por Categoria (donut/barra)'],
-                ['- Status de Pagamento (gráfico de rosca)'],
-                ['- Top 5 Categorias (barra)'],
-                [''],
-                [`📦 Exportado em: ${new Date().toLocaleString('pt-BR')}`],
-                [`📊 Total de transações: ${dadosFato.length}`],
-                [`🏷️ Total de categorias: ${dadosDimCategoria.length}`]
-            ];
-            const wsInstrucoes = XLSX.utils.aoa_to_sheet(instrucoes);
-            wsInstrucoes['!cols'] = [{ wch: 50 }];
-            XLSX.utils.book_append_sheet(wb, wsInstrucoes, "Instrucoes_PowerBI");
-
-            // 7. Dispara o download do arquivo compatível com Power BI
-            XLSX.writeFile(wb, `Finwise_PowerBI_${new Date().toISOString().slice(0,10)}.xlsx`);
-            
-            showToast(`✅ ${dadosFato.length} transações exportadas com sucesso!`, 'success');
+            }, 300);
         }
 
         // ============ TAGS SYSTEM ============
