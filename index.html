@@ -111,6 +111,7 @@
         }
 
         .transaction-pending { opacity: 0.9; border-left: 3px solid #f59e0b; background: rgba(245, 158, 11, 0.03); }
+        .transaction-overdue { border-left: 3px solid #ef4444; background: rgba(239, 68, 68, 0.05); }
 
         .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -2289,24 +2290,64 @@
             };
         }
 
+        // ============ FUNÇÃO PRINCIPAL DE FILTRAGEM E ORDENAÇÃO ============
         function getFilteredTransactions() {
             const month = filterMonth.value;
+            const todayStr = new Date().toISOString().slice(0, 10);
+            
+            // Buscar transações do mês selecionado
+            let monthTransactions = transactions.filter(t => t.date.startsWith(month));
+            
+            // Buscar contas vencidas (despesas pendentes com data < hoje)
+            // que NÃO estão no mês selecionado (para evitar duplicatas)
+            const overdueTransactions = transactions.filter(t => 
+                !t.date.startsWith(month) && 
+                !t.paid && 
+                t.date < todayStr && 
+                categoryMeta[t.category]?.type === 'expense'
+            );
+            
+            // Combinar e remover duplicatas (usando ID como chave)
+            const allTransactionsMap = new Map();
+            
+            // Primeiro adicionar as transações do mês
+            monthTransactions.forEach(t => {
+                allTransactionsMap.set(t.id, t);
+            });
+            
+            // Depois adicionar as contas vencidas (sobrescrevendo se já existir, mas não deve)
+            overdueTransactions.forEach(t => {
+                if (!allTransactionsMap.has(t.id)) {
+                    allTransactionsMap.set(t.id, t);
+                }
+            });
+            
+            // Converter para array
+            let filtered = Array.from(allTransactionsMap.values());
+            
+            // Aplicar filtros de busca, categoria, status e tags
             const search = document.getElementById('searchFilter')?.value.toLowerCase() || '';
             const category = document.getElementById('categoryFilter')?.value || 'all';
             const status = document.getElementById('statusFilter')?.value || 'all';
             const tag = document.getElementById('tagFilter')?.value || 'all';
             
-            let filtered = transactions.filter(t => t.date.startsWith(month));
             if (search) filtered = filtered.filter(t => t.description.toLowerCase().includes(search));
             if (category !== 'all') filtered = filtered.filter(t => t.category === category);
             if (status === 'paid') filtered = filtered.filter(t => t.paid);
             else if (status === 'unpaid') filtered = filtered.filter(t => !t.paid);
             if (tag !== 'all') filtered = filtered.filter(t => (t.tags || []).includes(tag));
             
-            return filtered.sort((a, b) => {
-                if (a.paid !== b.paid) return a.paid ? 1 : -1;
-                return new Date(b.date) - new Date(a.date);
+            // ORDENAÇÃO: Pendentes primeiro (data crescente), depois Pagas (data crescente)
+            filtered.sort((a, b) => {
+                // Primeiro critério: status (pendentes vêm primeiro)
+                if (a.paid !== b.paid) {
+                    return a.paid ? 1 : -1; // false (pendente) vem antes
+                }
+                // Segundo critério: data crescente (mais antigas primeiro)
+                return a.date.localeCompare(b.date);
             });
+            
+            return filtered;
         }
 
         function clearFilters() {
@@ -2576,7 +2617,16 @@
             const month = filterMonth.value;
             const todayStr = new Date().toISOString().slice(0, 10);
             
-            // --- FILTRO PRINCIPAL: APENAS TRANSAÇÕES PAGAS ---
+            // --- SALDO REMANESCENTE GLOBAL (TODAS AS TRANSAÇÕES PAGAS) ---
+            const allPaid = transactions.filter(t => t.paid === true);
+            let totalPaidInc = 0, totalPaidExp = 0;
+            allPaid.forEach(t => {
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') totalPaidInc += t.amount;
+                else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') totalPaidExp += t.amount;
+            });
+            const saldoRemanescente = totalPaidInc - totalPaidExp;
+
+            // --- SALDO DO MÊS SELECIONADO (APENAS PAGAS) ---
             const allMonthly = transactions.filter(t => t.date.startsWith(month) && t.paid === true);
             let totalInc = 0, totalExp = 0;
             allMonthly.forEach(t => {
@@ -2648,6 +2698,18 @@
             }
 
             const cards = [
+                { id: 'saldo_global', className: 'col-span-full lg:col-span-2 border-l-4 border-l-emerald-400', content: `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">💰 Saldo Remanescente</span>
+                        <span class="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full text-[9px] font-extrabold">Acumulado</span>
+                    </div>
+                    <h3 id="globalBalance" class="text-2xl lg:text-3xl font-black ${saldoRemanescente >= 0 ? 'text-emerald-400' : 'text-rose-400'} tracking-tighter">${formatCurrency(saldoRemanescente)}</h3>
+                    <div class="flex gap-4 mt-2 text-[10px]">
+                        <div><span class="text-slate-500">Total Recebido:</span> <span class="text-emerald-400 font-bold">${formatCurrency(totalPaidInc)}</span></div>
+                        <div><span class="text-slate-500">Total Gasto:</span> <span class="text-rose-400 font-bold">${formatCurrency(totalPaidExp)}</span></div>
+                    </div>
+                    <p class="text-[8px] text-slate-500 mt-1">Saldo de todas as transações pagas (independente do período)</p>
+                `},
                 { id: 'balance', className: 'col-span-full lg:col-span-2 border-l-4 border-l-cyan-400', content: `
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Saldo Mensal (Pago)</span>
@@ -2806,27 +2868,43 @@
             
             document.getElementById('transactionList').innerHTML = filtered.map((t, index) => {
                 let statusBadge = '';
+                let rowClass = '';
                 if (!t.paid) {
-                    if (t.date === todayStr) statusBadge = '<span class="ml-2 bg-rose-500/20 text-rose-400 px-2 py-1 rounded-lg text-[8px] font-black uppercase">Vence Hoje</span>';
-                    else if (t.date < todayStr) statusBadge = '<span class="ml-2 bg-rose-500/20 text-rose-400 px-2 py-1 rounded-lg text-[8px] font-black uppercase">Vencida</span>';
+                    if (t.date === todayStr) {
+                        statusBadge = '<span class="ml-2 bg-rose-500/20 text-rose-400 px-2 py-1 rounded-lg text-[8px] font-black uppercase">Vence Hoje</span>';
+                        rowClass = 'border-l-4 border-l-rose-500';
+                    } else if (t.date < todayStr) {
+                        statusBadge = '<span class="ml-2 bg-rose-500/20 text-rose-400 px-2 py-1 rounded-lg text-[8px] font-black uppercase">Vencida</span>';
+                        rowClass = 'bg-rose-500/5 border-l-4 border-l-rose-500';
+                    } else {
+                        rowClass = 'transaction-pending';
+                    }
                 }
                 const isRecurring = t.groupId ? '🔁' : '';
                 const cat = categoryMeta[t.category] || { name: 'Sem categoria', icon: '📌' };
                 const tags = (t.tags || []).map(tag => `<span class="tag" style="font-size:0.4rem;">#${tag}</span>`).join(' ');
                 const delay = index * 0.05;
-                return `<tr class="hover:bg-slate-800/20 ${!t.paid && t.date < todayStr ? 'bg-rose-500/5' : !t.paid ? 'transaction-pending' : ''}" data-id="${t.id}" style="animation: fadeSlideIn 0.3s ${delay}s both;"><td class="px-6 py-4"><button onclick="togglePaid(${t.id})" class="mx-auto w-6 h-6 rounded-lg flex items-center justify-center border ${t.paid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 text-slate-700'}"><i class="fas ${t.paid ? 'fa-check text-[10px]' : 'fa-circle text-[4px]'}"></i></button></td><td class="px-6 py-4 font-bold text-slate-500 text-[10px]">${formatDate(t.date)}</td><td class="px-6 py-4"><div class="flex items-center"><span class="font-bold text-slate-200">${t.description}</span> ${isRecurring}${statusBadge}</div>${tags}</td><td class="px-6 py-4 font-black ${categoryMeta[t.category] && categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</td><td class="px-6 py-4"><div class="flex flex-wrap gap-1">${(t.tags || []).map(tag => `<span class="tag" style="font-size:0.4rem;">#${tag}</span>`).join(' ')}</div></td><td class="px-6 py-4 text-center"><div class="flex items-center justify-center gap-4"><button onclick="editTransaction(${t.id})" class="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 text-xs px-3 py-1.5 rounded-lg transition-all font-bold flex items-center gap-1.5"><i class="fas fa-pen"></i> Editar</button><button onclick="deleteTransaction(${t.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-xs px-3 py-1.5 rounded-lg transition-all font-bold flex items-center gap-1.5"><i class="fas fa-trash-can"></i></button></div></td></tr>`;
+                return `<tr class="hover:bg-slate-800/20 ${rowClass}" data-id="${t.id}" style="animation: fadeSlideIn 0.3s ${delay}s both;"><td class="px-6 py-4"><button onclick="togglePaid(${t.id})" class="mx-auto w-6 h-6 rounded-lg flex items-center justify-center border ${t.paid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 text-slate-700'}"><i class="fas ${t.paid ? 'fa-check text-[10px]' : 'fa-circle text-[4px]'}"></i></button></td><td class="px-6 py-4 font-bold text-slate-500 text-[10px]">${formatDate(t.date)}</td><td class="px-6 py-4"><div class="flex items-center"><span class="font-bold text-slate-200">${t.description}</span> ${isRecurring}${statusBadge}</div>${tags}</td><td class="px-6 py-4 font-black ${categoryMeta[t.category] && categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</td><td class="px-6 py-4"><div class="flex flex-wrap gap-1">${(t.tags || []).map(tag => `<span class="tag" style="font-size:0.4rem;">#${tag}</span>`).join(' ')}</div></td><td class="px-6 py-4 text-center"><div class="flex items-center justify-center gap-4"><button onclick="editTransaction(${t.id})" class="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 text-xs px-3 py-1.5 rounded-lg transition-all font-bold flex items-center gap-1.5"><i class="fas fa-pen"></i> Editar</button><button onclick="deleteTransaction(${t.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-xs px-3 py-1.5 rounded-lg transition-all font-bold flex items-center gap-1.5"><i class="fas fa-trash-can"></i></button></div></td></tr>`;
             }).join('');
             
             document.getElementById('mobileTransactionList').innerHTML = filtered.map(t => {
                 const isRecurring = t.groupId ? '🔁' : '';
                 let statusBadge = '';
+                let rowClass = '';
                 if (!t.paid) {
-                    if (t.date === todayStr) statusBadge = '🔴 Vence Hoje';
-                    else if (t.date < todayStr) statusBadge = '⚠️ Vencida';
+                    if (t.date === todayStr) {
+                        statusBadge = '🔴 Vence Hoje';
+                        rowClass = 'border-l-4 border-l-rose-500';
+                    } else if (t.date < todayStr) {
+                        statusBadge = '⚠️ Vencida';
+                        rowClass = 'bg-rose-500/5 border-l-4 border-l-rose-500';
+                    } else {
+                        rowClass = 'transaction-pending';
+                    }
                 }
                 const cat = categoryMeta[t.category] || { name: 'Sem categoria', icon: '📌' };
                 const tags = (t.tags || []).map(tag => `<span class="tag" style="font-size:0.4rem;">#${tag}</span>`).join(' ');
-                return `<div class="mobile-card ${!t.paid && t.date < todayStr ? 'bg-rose-500/5 border-l-4 border-l-rose-500' : !t.paid ? 'transaction-pending' : ''}"><div class="flex justify-between items-start mb-2"><div class="flex items-center gap-2"><button onclick="togglePaid(${t.id})" class="w-5 h-5 rounded-lg border flex items-center justify-center ${t.paid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 text-slate-700'}"><i class="fas ${t.paid ? 'fa-check text-[8px]' : 'fa-circle text-[3px]'}"></i></button><span class="font-bold text-slate-200 text-sm">${t.description} ${isRecurring}</span></div><span class="font-black ${categoryMeta[t.category] && categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</span></div><div class="flex justify-between items-center text-xs text-slate-500"><span>${cat.icon} ${cat.name}</span><span>${formatDate(t.date)} ${statusBadge}</span></div><div class="flex flex-wrap gap-1 mt-1">${tags}</div><div class="flex justify-end gap-3 mt-3 pt-3 border-t border-slate-800/50"><button onclick="editTransaction(${t.id})" class="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-xs px-3 py-1.5 rounded-lg transition-all font-bold flex items-center gap-1"><i class="fas fa-pen"></i> Editar</button><button onclick="deleteTransaction(${t.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs px-3 py-1.5 rounded-lg transition-all font-bold flex items-center gap-1"><i class="fas fa-trash-can"></i></button></div></div>`;
+                return `<div class="mobile-card ${rowClass}"><div class="flex justify-between items-start mb-2"><div class="flex items-center gap-2"><button onclick="togglePaid(${t.id})" class="w-5 h-5 rounded-lg border flex items-center justify-center ${t.paid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 text-slate-700'}"><i class="fas ${t.paid ? 'fa-check text-[8px]' : 'fa-circle text-[3px]'}"></i></button><span class="font-bold text-slate-200 text-sm">${t.description} ${isRecurring}</span></div><span class="font-black ${categoryMeta[t.category] && categoryMeta[t.category].type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(t.amount)}</span></div><div class="flex justify-between items-center text-xs text-slate-500"><span>${cat.icon} ${cat.name}</span><span>${formatDate(t.date)} ${statusBadge}</span></div><div class="flex flex-wrap gap-1 mt-1">${tags}</div><div class="flex justify-end gap-3 mt-3 pt-3 border-t border-slate-800/50"><button onclick="editTransaction(${t.id})" class="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-xs px-3 py-1.5 rounded-lg transition-all font-bold flex items-center gap-1"><i class="fas fa-pen"></i> Editar</button><button onclick="deleteTransaction(${t.id})" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs px-3 py-1.5 rounded-lg transition-all font-bold flex items-center gap-1"><i class="fas fa-trash-can"></i></button></div></div>`;
             }).join('');
         }
 
