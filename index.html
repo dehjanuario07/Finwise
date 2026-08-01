@@ -2574,8 +2574,10 @@
         function renderDashboard() {
             const grid = document.getElementById('dashboardGrid');
             const month = filterMonth.value;
+            const todayStr = new Date().toISOString().slice(0, 10);
             
-            const allMonthly = transactions.filter(t => t.date.startsWith(month));
+            // --- FILTRO PRINCIPAL: APENAS TRANSAÇÕES PAGAS ---
+            const allMonthly = transactions.filter(t => t.date.startsWith(month) && t.paid === true);
             let totalInc = 0, totalExp = 0;
             allMonthly.forEach(t => {
                 if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') totalInc += t.amount;
@@ -2583,6 +2585,7 @@
             });
             const totalBalance = totalInc - totalExp;
 
+            // --- PENDENTES (APENAS PARA EXIBIÇÃO NOS CARDS ESPECÍFICOS) ---
             const pendingMonthly = transactions.filter(t => t.date.startsWith(month) && !t.paid);
             let pendInc = 0, pendExp = 0;
             pendingMonthly.forEach(t => { 
@@ -2590,10 +2593,21 @@
                 else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') pendExp += t.amount;
             });
 
+            // --- CONTAS VENCIDAS (INDEPENDENTE DO MÊS SELECIONADO) ---
+            const allOverdue = transactions.filter(t => !t.paid && t.date < todayStr && categoryMeta[t.category]?.type === 'expense');
+            const overdueCount = allOverdue.length;
+            const overdueTotal = allOverdue.reduce((s, t) => s + t.amount, 0);
+
+            // --- CONTAS QUE VENCEM HOJE ---
+            const dueToday = transactions.filter(t => !t.paid && t.date === todayStr && categoryMeta[t.category]?.type === 'expense');
+            const dueTodayCount = dueToday.length;
+            const dueTodayTotal = dueToday.reduce((s, t) => s + t.amount, 0);
+
+            // --- MÊS ANTERIOR (APENAS PAGAS PARA COMPARAÇÃO) ---
             const prevMonth = new Date(month);
             prevMonth.setMonth(prevMonth.getMonth() - 1);
             const prevKey = prevMonth.toISOString().slice(0, 7);
-            const prevMonthly = transactions.filter(t => t.date.startsWith(prevKey));
+            const prevMonthly = transactions.filter(t => t.date.startsWith(prevKey) && t.paid === true);
             let prevInc = 0, prevExp = 0;
             prevMonthly.forEach(t => {
                 if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') prevInc += t.amount;
@@ -2636,8 +2650,8 @@
             const cards = [
                 { id: 'balance', className: 'col-span-full lg:col-span-2 border-l-4 border-l-cyan-400', content: `
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Saldo Mensal</span>
-                        <span class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full text-[9px] font-extrabold">Todas as transações</span>
+                        <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Saldo Mensal (Pago)</span>
+                        <span class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full text-[9px] font-extrabold">Apenas pagos</span>
                     </div>
                     <div class="flex flex-wrap items-end gap-3">
                         <h3 id="monthlyBalance" class="text-2xl lg:text-3xl font-black text-cyan-400 tracking-tighter">${formatCurrency(totalBalance)}</h3>
@@ -2647,8 +2661,8 @@
                         </span>
                     </div>
                     <div class="flex gap-4 mt-2 text-[10px]">
-                        <div><span class="text-slate-500">Receitas:</span> <span id="monthlyIncome" class="text-emerald-400 font-bold">${formatCurrency(totalInc)}</span></div>
-                        <div><span class="text-slate-500">Despesas:</span> <span id="monthlyExpense" class="text-rose-400 font-bold">${formatCurrency(totalExp)}</span></div>
+                        <div><span class="text-slate-500">Receitas Pagas:</span> <span id="monthlyIncome" class="text-emerald-400 font-bold">${formatCurrency(totalInc)}</span></div>
+                        <div><span class="text-slate-500">Despesas Pagas:</span> <span id="monthlyExpense" class="text-rose-400 font-bold">${formatCurrency(totalExp)}</span></div>
                     </div>
                 `},
                 { id: 'pend_income', className: 'col-span-1 border-l-4 border-l-emerald-500', content: `
@@ -2676,21 +2690,25 @@
                     <div class="flex items-center gap-2 mb-1">
                         <i class="fas fa-exclamation-triangle text-rose-500 text-xs"></i>
                         <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Contas Vencidas</p>
+                        <span class="ml-auto bg-rose-500/10 text-rose-400 px-1.5 py-0.5 rounded-full text-[8px] font-black">${overdueCount}</span>
                     </div>
                     <div class="flex items-end gap-2">
-                        <h3 id="contasVencidas" class="text-xl font-black text-rose-500">${pendingMonthly.filter(t => !t.paid && t.date < new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').length}</h3>
-                        <span id="contasVencidasValor" class="text-xs font-bold text-rose-400">${formatCurrency(pendingMonthly.filter(t => !t.paid && t.date < new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0))}</span>
+                        <h3 id="contasVencidas" class="text-xl font-black text-rose-500">${overdueCount}</h3>
+                        <span id="contasVencidasValor" class="text-xs font-bold text-rose-400">${formatCurrency(overdueTotal)}</span>
                     </div>
+                    ${overdueCount > 0 ? `<p class="text-[8px] text-rose-500/70 mt-1">⚠️ ${overdueCount} conta(s) vencida(s)!</p>` : '<p class="text-[8px] text-emerald-500/70 mt-1">✅ Nenhuma conta vencida</p>'}
                 `},
                 { id: 'dueToday', className: 'col-span-1 border-l-4 border-l-amber-500', content: `
                     <div class="flex items-center gap-2 mb-1">
                         <i class="fas fa-clock text-amber-400 text-xs"></i>
                         <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Vence Hoje</p>
+                        <span class="ml-auto bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded-full text-[8px] font-black">${dueTodayCount}</span>
                     </div>
                     <div class="flex items-end gap-2">
-                        <h3 id="contasVenceHoje" class="text-xl font-black text-amber-400">${pendingMonthly.filter(t => !t.paid && t.date === new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').length}</h3>
-                        <span id="contasVenceHojeValor" class="text-xs font-bold text-amber-400">${formatCurrency(pendingMonthly.filter(t => !t.paid && t.date === new Date().toISOString().slice(0,10) && categoryMeta[t.category]?.type === 'expense').reduce((s, t) => s + t.amount, 0))}</span>
+                        <h3 id="contasVenceHoje" class="text-xl font-black text-amber-400">${dueTodayCount}</h3>
+                        <span id="contasVenceHojeValor" class="text-xs font-bold text-amber-400">${formatCurrency(dueTodayTotal)}</span>
                     </div>
+                    ${dueTodayCount > 0 ? `<p class="text-[8px] text-amber-500/70 mt-1">⏰ ${dueTodayCount} conta(s) vencem hoje!</p>` : '<p class="text-[8px] text-slate-500/70 mt-1">Nenhuma conta vence hoje</p>'}
                 `},
                 { id: 'recent', className: 'col-span-full lg:col-span-2 lg:row-span-3', content: `
                     <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-4">Movimentações Recentes</p>
@@ -2728,7 +2746,6 @@
             document.getElementById('latestActivity').innerHTML = [...pendingMonthly]
                 .sort((a,b) => b.id - a.id).slice(0, 10)
                 .map(t => {
-                    const todayStr = new Date().toISOString().slice(0, 10);
                     let statusBadge = '';
                     if (!t.paid) {
                         if (t.date === todayStr) statusBadge = '<span class="bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded-lg text-[7px] font-black uppercase">Vence Hoje</span>';
