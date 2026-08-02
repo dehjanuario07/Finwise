@@ -893,6 +893,51 @@
             .trend-indicator { font-size: 0.5rem; padding: 0.15rem 0.5rem; }
             .trend-indicator .trend-value { font-size: 0.7rem; }
         }
+
+        /* ===== CONSELHOS DO CONTADOR ===== */
+        .conselho-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(16, 185, 129, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+        .conselho-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+        .conselho-card .titulo {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+        .conselho-card .conteudo {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin-top: 0.5rem;
+        }
+        .conselho-card .conteudo strong {
+            color: #a78bfa;
+        }
+        .conselho-card .conteudo .destaque-bom {
+            color: #10b981;
+            font-weight: 700;
+        }
+        .conselho-card .conteudo .destaque-ruim {
+            color: #f43f5e;
+            font-weight: 700;
+        }
+        .conselho-card .conteudo .destaque-alerta {
+            color: #f59e0b;
+            font-weight: 700;
+        }
+        .conselho-card .icone {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -1448,20 +1493,11 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="chart-container">
-                        <div class="chart-title"><i class="fas fa-calendar-day text-rose-400"></i> Despesas por Dia do Mês</div>
-                        <div class="h-[280px]">
-                            <canvas id="chartDailyExpenses"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-container">
                         <div class="chart-title"><i class="fas fa-calendar-week text-amber-400"></i> Fluxo Semanal</div>
                         <div class="h-[280px]">
                             <canvas id="chartWeeklyFlow"></canvas>
                         </div>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="chart-container">
                         <div class="chart-title"><i class="fas fa-chart-line text-purple-400"></i> Evolução dos Últimos 12 Meses</div>
                         <div class="h-[280px]">
@@ -1520,33 +1556,36 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <h2 class="text-2xl font-black text-white tracking-tight flex items-center gap-3">
                         <i class="fas fa-arrows-left-right text-indigo-400"></i>
-                        Comparação Mensal
+                        Comparação - Últimos 4 Meses
                     </h2>
-                    <div class="flex items-center gap-3">
-                        <span class="text-[9px] font-black text-slate-500 uppercase">Referência:</span>
-                        <select id="compareMonthSelect" class="bg-slate-800/50 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-indigo-500">
-                            <option value="previous">Mês Anterior</option>
-                            <option value="same">Mesmo Mês Ano Anterior</option>
-                        </select>
-                    </div>
                 </div>
 
                 <div id="comparisonContent">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-                        <div class="stat-card text-center">
-                            <p class="text-[8px] text-slate-500 uppercase font-black">Variação Total</p>
-                            <p id="compTotalVariation" class="text-xl font-bold text-emerald-400 mt-1">0%</p>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="stat-card text-center" id="compMonth1">
+                            <p class="text-[8px] text-slate-500 uppercase font-black">Mês 1</p>
+                            <p class="text-sm font-bold text-emerald-400 mt-1" id="compMonth1Income">R$ 0,00</p>
+                            <p class="text-sm font-bold text-rose-400" id="compMonth1Expense">R$ 0,00</p>
                         </div>
-                        <div class="stat-card text-center">
-                            <p class="text-[8px] text-slate-500 uppercase font-black">Variação Receitas</p>
-                            <p id="compIncomeVariation" class="text-xl font-bold text-emerald-400 mt-1">0%</p>
+                        <div class="stat-card text-center" id="compMonth2">
+                            <p class="text-[8px] text-slate-500 uppercase font-black">Mês 2</p>
+                            <p class="text-sm font-bold text-emerald-400 mt-1" id="compMonth2Income">R$ 0,00</p>
+                            <p class="text-sm font-bold text-rose-400" id="compMonth2Expense">R$ 0,00</p>
                         </div>
-                        <div class="stat-card text-center">
-                            <p class="text-[8px] text-slate-500 uppercase font-black">Variação Despesas</p>
-                            <p id="compExpenseVariation" class="text-xl font-bold text-rose-400 mt-1">0%</p>
+                        <div class="stat-card text-center" id="compMonth3">
+                            <p class="text-[8px] text-slate-500 uppercase font-black">Mês 3</p>
+                            <p class="text-sm font-bold text-emerald-400 mt-1" id="compMonth3Income">R$ 0,00</p>
+                            <p class="text-sm font-bold text-rose-400" id="compMonth3Expense">R$ 0,00</p>
+                        </div>
+                        <div class="stat-card text-center" id="compMonth4">
+                            <p class="text-[8px] text-slate-500 uppercase font-black">Mês 4</p>
+                            <p class="text-sm font-bold text-emerald-400 mt-1" id="compMonth4Income">R$ 0,00</p>
+                            <p class="text-sm font-bold text-rose-400" id="compMonth4Expense">R$ 0,00</p>
                         </div>
                     </div>
-                    <div id="comparisonTableContainer" class="overflow-x-auto"></div>
+                    <div class="h-[350px]">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
                 </div>
             </div>
         </section>
@@ -2062,37 +2101,6 @@
                         { label: 'Receitas', data: labels.map(k => catTotals[k].income), backgroundColor: 'rgba(16,185,129,0.7)', borderColor: '#10b981', borderWidth: 1 },
                         { label: 'Despesas', data: labels.map(k => catTotals[k].expense), backgroundColor: 'rgba(244,63,94,0.7)', borderColor: '#f43f5e', borderWidth: 1 }
                     ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#64748b', font: { size: 9, weight: 'bold' }, boxWidth: 12 } } },
-                    scales: {
-                        x: { ticks: { color: '#475569', font: { size: 8 } }, grid: { color: 'rgba(71,85,105,0.1)' } },
-                        y: { ticks: { color: '#475569', font: { size: 8 }, callback: v => 'R$' + v.toFixed(0) }, grid: { color: 'rgba(71,85,105,0.1)' } }
-                    }
-                }
-            });
-
-            const dailyData = {};
-            const today = new Date();
-            for (let i = 29; i >= 0; i--) {
-                const d = new Date(today);
-                d.setDate(d.getDate() - i);
-                const key = d.toISOString().slice(0, 10);
-                dailyData[key] = 0;
-            }
-            transactions.forEach(t => {
-                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
-                    if (dailyData[t.date] !== undefined) dailyData[t.date] += t.amount;
-                }
-            });
-            const days = Object.keys(dailyData).sort();
-            if (charts.chartDailyExpenses) charts.chartDailyExpenses.destroy();
-            charts.chartDailyExpenses = new Chart(document.getElementById('chartDailyExpenses'), {
-                type: 'bar',
-                data: {
-                    labels: days.map(d => d.split('-')[2]),
-                    datasets: [{ label: 'Despesas', data: days.map(d => dailyData[d]), backgroundColor: 'rgba(244,63,94,0.6)', borderColor: '#f43f5e', borderWidth: 1 }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
@@ -2908,440 +2916,356 @@
             }).join('');
         }
 
-        // ============ COMPARAÇÃO MENSAL ============
+        // ============ COMPARAÇÃO - ÚLTIMOS 4 MESES ============
         function renderComparison() {
             const currentMonth = filterMonth.value;
-            const compareType = document.getElementById('compareMonthSelect')?.value || 'previous';
-            
-            let prevMonth;
-            if (compareType === 'previous') {
-                prevMonth = new Date(currentMonth);
-                prevMonth.setMonth(prevMonth.getMonth() - 1);
-            } else {
-                prevMonth = new Date(currentMonth);
-                prevMonth.setFullYear(prevMonth.getFullYear() - 1);
-            }
-            const prevKey = prevMonth.toISOString().slice(0, 7);
-            
-            const currentData = getCategoryTotalsForMonth(currentMonth);
-            const prevData = getCategoryTotalsForMonth(prevKey);
-            
-            const allCategories = new Set([...Object.keys(currentData), ...Object.keys(prevData)]);
-            
-            let totalCurrent = 0, totalPrev = 0;
-            let incCurrent = 0, incPrev = 0;
-            let expCurrent = 0, expPrev = 0;
-            
-            const rows = [];
-            allCategories.forEach(cat => {
-                const current = currentData[cat] || 0;
-                const prev = prevData[cat] || 0;
-                const variation = prev > 0 ? ((current - prev) / prev * 100) : current > 0 ? 100 : 0;
-                const type = categoryMeta[cat]?.type || 'expense';
-                if (type === 'income') { incCurrent += current; incPrev += prev; }
-                else { expCurrent += current; expPrev += prev; }
-                totalCurrent += current;
-                totalPrev += prev;
-                rows.push({ cat, current, prev, variation, type });
-            });
-            
-            rows.sort((a, b) => {
-                const nameA = categoryMeta[a.cat]?.name || a.cat;
-                const nameB = categoryMeta[b.cat]?.name || b.cat;
-                return nameA.localeCompare(nameB);
-            });
-            
-            const totalVariation = totalPrev > 0 ? ((totalCurrent - totalPrev) / totalPrev * 100) : 0;
-            const incVariation = incPrev > 0 ? ((incCurrent - incPrev) / incPrev * 100) : 0;
-            const expVariation = expPrev > 0 ? ((expCurrent - expPrev) / expPrev * 100) : 0;
-            
-            document.getElementById('compTotalVariation').textContent = `${totalVariation >= 0 ? '▲' : '▼'} ${Math.abs(totalVariation).toFixed(1)}%`;
-            document.getElementById('compTotalVariation').className = `text-xl font-bold mt-1 ${totalVariation >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
-            document.getElementById('compIncomeVariation').textContent = `${incVariation >= 0 ? '▲' : '▼'} ${Math.abs(incVariation).toFixed(1)}%`;
-            document.getElementById('compIncomeVariation').className = `text-xl font-bold mt-1 ${incVariation >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
-            document.getElementById('compExpenseVariation').textContent = `${expVariation >= 0 ? '▲' : '▼'} ${Math.abs(expVariation).toFixed(1)}%`;
-            document.getElementById('compExpenseVariation').className = `text-xl font-bold mt-1 ${expVariation >= 0 ? 'text-rose-400' : 'text-emerald-400'}`;
-            
             const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            const currentDate = new Date(currentMonth + '-01');
-            const prevDate = new Date(prevKey + '-01');
             
-            document.getElementById('comparisonTableContainer').innerHTML = `
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Categoria</th>
-                            <th class="text-right">${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}</th>
-                            <th class="text-right">${monthNames[prevDate.getMonth()]} ${prevDate.getFullYear()}</th>
-                            <th class="text-right">Variação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rows.map(row => `
-                            <tr onclick="openCategoryAnalysis('${row.cat}')" style="cursor:pointer;">
-                                <td class="font-bold">${categoryMeta[row.cat]?.icon || '📌'} ${categoryMeta[row.cat]?.name || row.cat}</td>
-                                <td class="text-right font-bold ${row.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(row.current)}</td>
-                                <td class="text-right text-slate-400">${formatCurrency(row.prev)}</td>
-                                <td class="text-right font-bold ${row.variation >= 0 ? 'trend-up' : 'trend-down'}">
-                                    ${row.variation >= 0 ? '▲' : '▼'} ${Math.abs(row.variation).toFixed(1)}%
-                                </td>
-                            </tr>
-                        `).join('')}
-                        <tr style="border-top: 2px solid var(--border-color); font-weight: 900;">
-                            <td>TOTAL</td>
-                            <td class="text-right text-cyan-400">${formatCurrency(totalCurrent)}</td>
-                            <td class="text-right text-slate-400">${formatCurrency(totalPrev)}</td>
-                            <td class="text-right font-bold ${totalVariation >= 0 ? 'trend-up' : 'trend-down'}">
-                                ${totalVariation >= 0 ? '▲' : '▼'} ${Math.abs(totalVariation).toFixed(1)}%
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `;
-        }
-
-        function getCategoryTotalsForMonth(month) {
-            const data = {};
-            const filtered = transactions.filter(t => t.date.startsWith(month));
-            filtered.forEach(t => {
-                const cat = t.category;
-                data[cat] = (data[cat] || 0) + t.amount;
-            });
-            return data;
-        }
-
-        // ============ RELATÓRIOS ============
-        function renderReportsImproved() {
-            const grid = document.getElementById('reportsGrid');
-            grid.innerHTML = '';
-
-            const summaryCard = document.createElement('div');
-            summaryCard.className = 'report-card full-width';
-            summaryCard.innerHTML = `
-                <div class="resumo-contador">
-                    <div class="titulo-resumo">
-                        <i class="fas fa-user-tie"></i> Análise Financeira - Relatório Executivo
-                    </div>
-                    <div id="resumoTexto" class="texto-resumo">
-                        <p>Carregando análise...</p>
-                    </div>
-                    <div class="assinatura">
-                        <span><i class="fas fa-user-circle mr-1"></i> Finwise - Análise Inteligente</span>
-                        <span class="data-hora" id="resumoDataHora"></span>
-                    </div>
-                </div>
-            `;
-            grid.appendChild(summaryCard);
-
-            const statsCard = document.createElement('div');
-            statsCard.className = 'report-card full-width';
-            statsCard.innerHTML = `
-                <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
-                    <i class="fas fa-chart-pie text-amber-400 text-sm"></i>
-                    Resumo do Período
-                </h3>
-                <div id="reportStats" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
-            `;
-            grid.appendChild(statsCard);
-
-            const areaCard = document.createElement('div');
-            areaCard.className = 'report-card full-width';
-            areaCard.innerHTML = `
-                <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
-                    <i class="fas fa-chart-area text-emerald-400 text-sm"></i>
-                    Evolução Acumulada
-                </h3>
-                <div class="h-[280px]">
-                    <canvas id="stackedAreaChart"></canvas>
-                </div>
-            `;
-            grid.appendChild(areaCard);
-
-            const waterfallCard = document.createElement('div');
-            waterfallCard.className = 'report-card full-width';
-            waterfallCard.innerHTML = `
-                <h3 class="text-white font-extrabold text-lg mb-4 flex items-center gap-2">
-                    <i class="fas fa-chart-waterfall text-purple-400 text-sm"></i>
-                    Impacto por Categoria
-                </h3>
-                <div class="h-[280px]">
-                    <canvas id="waterfallChart"></canvas>
-                </div>
-            `;
-            grid.appendChild(waterfallCard);
-
-            renderReportsData();
-        }
-
-        function renderReportsData() {
-            const month = filterMonth.value;
-            const filtered = transactions.filter(t => t.date.startsWith(month));
-            const inc = filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'income').reduce((s, t) => s + t.amount, 0);
-            const exp = filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense').reduce((s, t) => s + t.amount, 0);
-            const total = filtered.length;
-            const paid = filtered.filter(t => t.paid).length;
-            const saldo = inc - exp;
-
-            document.getElementById('reportStats').innerHTML = `
-                <div class="stat-card text-center">
-                    <p class="text-[8px] text-slate-500 uppercase font-black">Total</p>
-                    <p class="text-lg font-bold text-white mt-1">${total}</p>
-                </div>
-                <div class="stat-card text-center">
-                    <p class="text-[8px] text-slate-500 uppercase font-black">Pagos</p>
-                    <p class="text-lg font-bold text-emerald-400 mt-1">${paid}</p>
-                </div>
-                <div class="stat-card text-center">
-                    <p class="text-[8px] text-slate-500 uppercase font-black">Pendentes</p>
-                    <p class="text-lg font-bold text-amber-400 mt-1">${total - paid}</p>
-                </div>
-                <div class="stat-card text-center">
-                    <p class="text-[8px] text-slate-500 uppercase font-black">Saldo</p>
-                    <p class="text-lg font-bold ${saldo >= 0 ? 'text-emerald-400' : 'text-rose-400'} mt-1">${formatCurrency(saldo)}</p>
-                </div>
-                <div class="stat-card text-center">
-                    <p class="text-[8px] text-slate-500 uppercase font-black">Taxa Economia</p>
-                    <p class="text-lg font-bold ${inc > 0 && ((inc - exp) / inc) >= 0 ? 'text-emerald-400' : 'text-rose-400'} mt-1">
-                        ${inc > 0 ? ((inc - exp) / inc * 100).toFixed(1) : 0}%
-                    </p>
-                </div>
-            `;
-
-            gerarResumoContador(month, filtered, inc, exp, total, paid);
-
-            const months = [];
-            const incomeData = [];
-            const expenseData = [];
-            for (let i = 5; i >= 0; i--) {
-                const d = new Date();
+            // Buscar os últimos 4 meses (mês atual + 3 anteriores)
+            const monthsData = [];
+            const monthKeys = [];
+            
+            for (let i = 3; i >= 0; i--) {
+                const d = new Date(currentMonth + '-01');
                 d.setMonth(d.getMonth() - i);
                 const key = d.toISOString().slice(0, 7);
+                monthKeys.push(key);
+                
                 const monthTrans = transactions.filter(t => t.date.startsWith(key));
-                let incM = 0, expM = 0;
+                let income = 0, expense = 0;
                 monthTrans.forEach(t => {
-                    if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') incM += t.amount;
-                    else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') expM += t.amount;
+                    if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') income += t.amount;
+                    else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') expense += t.amount;
                 });
-                months.push(`${d.getMonth()+1}/${d.getFullYear().toString().slice(2)}`);
-                incomeData.push(incM);
-                expenseData.push(expM);
+                monthsData.push({
+                    key: key,
+                    label: `${monthNames[d.getMonth()]}/${d.getFullYear().toString().slice(2)}`,
+                    income: income,
+                    expense: expense,
+                    balance: income - expense
+                });
             }
-            new Chart(document.getElementById('stackedAreaChart'), {
-                type: 'line',
+            
+            // Atualizar cards de resumo
+            monthsData.forEach((data, index) => {
+                const num = index + 1;
+                document.getElementById(`compMonth${num}Income`).textContent = formatCurrency(data.income);
+                document.getElementById(`compMonth${num}Expense`).textContent = formatCurrency(data.expense);
+                document.getElementById(`compMonth${num}`).querySelector('.text-[8px]').textContent = data.label;
+            });
+            
+            // Criar gráfico de barras
+            if (charts.comparison) charts.comparison.destroy();
+            
+            charts.comparison = new Chart(document.getElementById('comparisonChart'), {
+                type: 'bar',
                 data: {
-                    labels: months,
+                    labels: monthsData.map(d => d.label),
                     datasets: [
-                        { label: 'Receitas', data: incomeData, backgroundColor: 'rgba(16,185,129,0.3)', borderColor: '#10b981', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4 },
-                        { label: 'Despesas', data: expenseData, backgroundColor: 'rgba(244,63,94,0.3)', borderColor: '#f43f5e', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4 }
+                        {
+                            label: 'Receitas',
+                            data: monthsData.map(d => d.income),
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                            borderColor: '#10b981',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Despesas',
+                            data: monthsData.map(d => d.expense),
+                            backgroundColor: 'rgba(244, 63, 94, 0.8)',
+                            borderColor: '#f43f5e',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#64748b', font: { size: 10, weight: 'bold' }, boxWidth: 12 } } },
-                    scales: {
-                        x: { ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(71,85,105,0.1)' } },
-                        y: { ticks: { color: '#475569', font: { size: 9 }, callback: v => 'R$' + v.toFixed(0) }, grid: { color: 'rgba(71,85,105,0.1)' } }
-                    }
-                }
-            });
-
-            const expenses = {};
-            filtered.forEach(t => {
-                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
-                    const name = categoryMeta[t.category].name;
-                    expenses[name] = (expenses[name] || 0) + t.amount;
-                }
-            });
-            const sorted = Object.entries(expenses).sort((a, b) => b[1] - a[1]);
-            const waterLabels = sorted.map(([name]) => name);
-            const waterValues = sorted.map(([_, value]) => value);
-            const waterColors = sorted.map(([name]) => {
-                const cat = Object.values(categoryMeta).find(c => c.name === name);
-                return cat ? cat.color : '#94a3b8';
-            });
-            const totalExpenses = waterValues.reduce((a, b) => a + b, 0);
-            
-            const waterfallData = [...waterValues, totalExpenses];
-            const waterfallLabels = [...waterLabels, 'TOTAL DE GASTOS'];
-            const waterfallColors = [...waterColors, '#f43f5e'];
-            
-            new Chart(document.getElementById('waterfallChart'), {
-                type: 'bar',
-                data: {
-                    labels: waterfallLabels,
-                    datasets: [{
-                        data: waterfallData,
-                        backgroundColor: waterfallColors.map(c => c + '80'),
-                        borderColor: waterfallColors,
-                        borderWidth: 2,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#64748b',
+                                font: { size: 12, weight: 'bold' },
+                                boxWidth: 15,
+                                padding: 20
+                            }
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return formatCurrency(context.parsed.y);
+                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
                                 }
                             }
                         }
                     },
                     scales: {
-                        x: { 
-                            ticks: { 
-                                color: '#475569', 
-                                font: { size: 9, weight: 'bold' },
-                                maxRotation: 45,
-                                minRotation: 30
-                            }, 
-                            grid: { display: false } 
+                        x: {
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { size: 11, weight: 'bold' }
+                            },
+                            grid: { color: 'rgba(71, 85, 105, 0.1)' }
                         },
-                        y: { 
-                            ticks: { 
-                                color: '#475569', 
-                                font: { size: 9 },
+                        y: {
+                            ticks: {
+                                color: '#64748b',
+                                font: { size: 10 },
                                 callback: v => 'R$' + v.toFixed(0)
-                            }, 
-                            grid: { color: 'rgba(71,85,105,0.1)' } 
+                            },
+                            grid: { color: 'rgba(71, 85, 105, 0.1)' }
                         }
                     }
                 }
             });
         }
 
-        function gerarResumoContador(month, filtered, inc, exp, total, paid) {
+        // ============ RELATÓRIOS - ANÁLISE DO CONTADOR ============
+        function renderReportsImproved() {
+            const grid = document.getElementById('reportsGrid');
+            grid.innerHTML = '';
+            
+            // Buscar dados dos últimos 6 meses para análise
+            const month = filterMonth.value;
             const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            const [year, monthNum] = month.split('-').map(Number);
-            const mesNome = monthNames[monthNum - 1];
             
-            const saldo = inc - exp;
-            const saldoClass = saldo >= 0 ? 'destaque-verde' : 'destaque-vermelho';
-            const saldoEmoji = saldo >= 0 ? '📈' : '📉';
+            // Dados do mês atual
+            const currentMonthTrans = transactions.filter(t => t.date.startsWith(month));
+            let currentIncome = 0, currentExpense = 0;
+            currentMonthTrans.forEach(t => {
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') currentIncome += t.amount;
+                else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') currentExpense += t.amount;
+            });
             
+            // Dados do mês anterior
+            const prevDate = new Date(month + '-01');
+            prevDate.setMonth(prevDate.getMonth() - 1);
+            const prevKey = prevDate.toISOString().slice(0, 7);
+            const prevMonthTrans = transactions.filter(t => t.date.startsWith(prevKey));
+            let prevIncome = 0, prevExpense = 0;
+            prevMonthTrans.forEach(t => {
+                if (categoryMeta[t.category] && categoryMeta[t.category].type === 'income') prevIncome += t.amount;
+                else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') prevExpense += t.amount;
+            });
+            
+            // Categorias com maiores gastos
             const catExpenses = {};
-            filtered.forEach(t => {
+            currentMonthTrans.forEach(t => {
                 if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') {
-                    const nome = categoryMeta[t.category].name;
-                    catExpenses[nome] = (catExpenses[nome] || 0) + t.amount;
+                    const name = categoryMeta[t.category].name;
+                    catExpenses[name] = (catExpenses[name] || 0) + t.amount;
                 }
             });
             const sortedCats = Object.entries(catExpenses).sort((a, b) => b[1] - a[1]);
-            const maiorCategoria = sortedCats.length > 0 ? sortedCats[0] : null;
+            const topCategories = sortedCats.slice(0, 5);
             
-            const daysInMonth = new Date(year, monthNum, 0).getDate();
-            const mediaDiaria = daysInMonth > 0 ? exp / daysInMonth : 0;
+            // Calcular variações
+            const incomeVar = prevIncome > 0 ? ((currentIncome - prevIncome) / prevIncome * 100) : 0;
+            const expenseVar = prevExpense > 0 ? ((currentExpense - prevExpense) / prevExpense * 100) : 0;
             
-            const pendentes = filtered.filter(t => !t.paid && categoryMeta[t.category] && categoryMeta[t.category].type === 'expense');
-            const totalPendentes = pendentes.reduce((s, t) => s + t.amount, 0);
+            // Saldo atual
+            const currentBalance = currentIncome - currentExpense;
+            const prevBalance = prevIncome - prevExpense;
             
-            let taxaEconomia = 0;
-            let textoEconomia = '';
-            if (inc > 0) {
-                taxaEconomia = ((inc - exp) / inc) * 100;
-                if (taxaEconomia > 0) {
-                    textoEconomia = `Sua taxa de economia foi de <strong class="destaque-verde">${taxaEconomia.toFixed(1)}%</strong> da sua renda.`;
-                } else if (taxaEconomia === 0) {
-                    textoEconomia = `Você gastou exatamente o que ganhou neste mês.`;
-                } else {
-                    textoEconomia = `Suas despesas superaram sua renda em <strong class="destaque-vermelho">${Math.abs(taxaEconomia).toFixed(1)}%</strong>. Atenção!`;
-                }
-            } else {
-                textoEconomia = `Não houve registros de receitas neste mês.`;
-            }
+            const monthNum = parseInt(month.split('-')[1]) - 1;
+            const year = month.split('-')[0];
             
-            const metasAtivas = goals.filter(g => g.current < g.target);
-            const metasConcluidas = goals.filter(g => g.current >= g.target);
-            
-            let textoMetas = '';
-            if (metasAtivas.length > 0) {
-                textoMetas = `Você tem <strong class="destaque-azul">${metasAtivas.length} meta(s)</strong> em andamento`;
-                if (metasConcluidas.length > 0) {
-                    textoMetas += ` e já concluiu <strong class="destaque-verde">${metasConcluidas.length}</strong>`;
-                }
-                textoMetas += '. Continue assim! 🎯';
-            } else if (metasConcluidas.length > 0) {
-                textoMetas = `Parabéns! Você já concluiu <strong class="destaque-verde">${metasConcluidas.length} meta(s)</strong>! 🎉`;
-            } else {
-                textoMetas = `Você ainda não criou metas. Que tal definir um objetivo financeiro?`;
-            }
-            
-            let texto = `
-                <p>
-                    <strong>📊 Análise do mês de ${mesNome}/${year}</strong>
-                </p>
-                <p style="margin-top: 0.5rem;">
-                    No período analisado, você registrou <strong>${total} movimentações</strong>, sendo 
-                    <strong class="destaque-verde">${formatCurrency(inc)} em receitas</strong> e 
-                    <strong class="destaque-vermelho">${formatCurrency(exp)} em despesas</strong>, 
-                    resultando em um saldo de <strong class="${saldoClass}">${formatCurrency(saldo)}</strong> ${saldoEmoji}.
-                </p>
-                <p style="margin-top: 0.5rem;">
-                    ${textoEconomia}
-                </p>
-                <p style="margin-top: 0.5rem;">
-                    Sua <strong>média diária de despesas</strong> foi de <strong class="destaque-amarelo">${formatCurrency(mediaDiaria)}</strong> por dia.
-                </p>
+            // Gerar análise detalhada
+            let analiseHTML = `
+                <div class="resumo-contador">
+                    <div class="titulo-resumo">
+                        <i class="fas fa-user-tie"></i> Análise Financeira - Relatório do Contador
+                        <span class="ml-auto text-[8px] text-slate-500">${monthNames[monthNum]} ${year}</span>
+                    </div>
+                    <div class="texto-resumo">
+                        <p style="font-size: 1.1rem; font-weight: 800; color: #a78bfa; margin-bottom: 1rem;">
+                            📊 Análise Detalhada das Finanças
+                        </p>
             `;
-
-            if (maiorCategoria) {
-                texto += `
-                    <p style="margin-top: 0.5rem;">
-                        Sua <strong>maior despesa</strong> foi com <strong class="destaque-roxo">${maiorCategoria[0]}</strong>, totalizando <strong class="destaque-vermelho">${formatCurrency(maiorCategoria[1])}</strong>, 
-                        representando <strong>${(maiorCategoria[1] / (exp || 1) * 100).toFixed(0)}%</strong> dos seus gastos.
-                        <span class="text-xs text-indigo-400 ml-2 cursor-pointer hover:underline" onclick="openCategoryAnalysis('${Object.keys(categoryMeta).find(k => categoryMeta[k].name === maiorCategoria[0])}')">
-                            <i class="fas fa-chart-line"></i> Ver análise
-                        </span>
-                    </p>
-                `;
-            }
-
-            if (totalPendentes > 0) {
-                texto += `
-                    <p style="margin-top: 0.5rem;">
-                        ⚠️ Você tem <strong class="destaque-amarelo">${pendentes.length} conta(s) pendentes</strong> no valor total de 
-                        <strong class="destaque-vermelho">${formatCurrency(totalPendentes)}</strong>. 
-                        ${pendentes.length > 3 ? 'Recomendamos priorizar a quitação desses débitos.' : 'Fique atento aos vencimentos!'}
-                    </p>
-                `;
-            } else {
-                texto += `
-                    <p style="margin-top: 0.5rem;">
-                        ✅ Boas notícias! <strong class="destaque-verde">Todas as suas contas estão em dia</strong>. Parabéns pela organização!
-                    </p>
-                `;
-            }
-
-            if (paid < total && total > 0) {
-                const pendentesTotal = total - paid;
-                texto += `
-                    <p style="margin-top: 0.5rem;">
-                        📋 Do total de ${total} lançamentos, <strong class="destaque-verde">${paid} já foram pagos</strong> e 
-                        <strong class="destaque-amarelo">${pendentesTotal} ainda estão pendentes</strong>.
-                    </p>
-                `;
-            }
-
-            texto += `
-                <p style="margin-top: 0.5rem;">
-                    🎯 ${textoMetas}
-                </p>
-                <p style="margin-top: 0.75rem; font-size: 0.85rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.75rem;">
-                    <i class="fas fa-lightbulb text-amber-400 mr-1"></i> 
-                    ${saldo >= 0 ? '💡 Dica: Continue mantendo esse equilíbrio financeiro. Que tal aumentar sua taxa de economia?' : 
-                    '💡 Dica: Revise seus gastos e identifique onde é possível cortar despesas para equilibrar as contas.'}
-                </p>
-            `;
-
-            document.getElementById('resumoTexto').innerHTML = texto;
             
+            // 1. Análise de Receitas
+            analiseHTML += `
+                <div class="conselho-card" style="margin-bottom: 1rem;">
+                    <div class="icone">📈</div>
+                    <div class="titulo">Análise de Receitas</div>
+                    <div class="conteudo">
+                        <p>No mês de <strong>${monthNames[monthNum]}/${year}</strong>, suas receitas totalizaram <strong class="destaque-bom">${formatCurrency(currentIncome)}</strong>.</p>
+                        <p style="margin-top: 0.3rem;">
+                            ${prevIncome > 0 ? 
+                                `Em comparação com o mês anterior (${formatCurrency(prevIncome)}), houve uma variação de <strong class="${incomeVar >= 0 ? 'destaque-bom' : 'destaque-ruim'}">${incomeVar >= 0 ? '▲' : '▼'} ${Math.abs(incomeVar).toFixed(1)}%</strong>.` :
+                                'Não há dados do mês anterior para comparação.'
+                            }
+                        </p>
+                        ${currentIncome < prevIncome ? 
+                            `<p style="margin-top: 0.3rem; color: #f59e0b;">⚠️ <strong>Alerta:</strong> Suas receitas reduziram em relação ao mês anterior. Recomendamos buscar novas fontes de renda ou revisar suas estratégias de faturamento.</p>` :
+                            currentIncome > prevIncome && prevIncome > 0 ?
+                            `<p style="margin-top: 0.3rem; color: #10b981;">✅ <strong>Ótimo!</strong> Suas receitas aumentaram em relação ao mês anterior. Continue com essa tendência positiva!</p>` :
+                            ''
+                        }
+                    </div>
+                </div>
+            `;
+            
+            // 2. Análise de Despesas
+            analiseHTML += `
+                <div class="conselho-card" style="margin-bottom: 1rem;">
+                    <div class="icone">📉</div>
+                    <div class="titulo">Análise de Despesas</div>
+                    <div class="conteudo">
+                        <p>No mês de <strong>${monthNames[monthNum]}/${year}</strong>, suas despesas totalizaram <strong class="destaque-vermelho">${formatCurrency(currentExpense)}</strong>.</p>
+                        <p style="margin-top: 0.3rem;">
+                            ${prevExpense > 0 ? 
+                                `Em comparação com o mês anterior (${formatCurrency(prevExpense)}), houve uma variação de <strong class="${expenseVar <= 0 ? 'destaque-bom' : 'destaque-ruim'}">${expenseVar <= 0 ? '▼' : '▲'} ${Math.abs(expenseVar).toFixed(1)}%</strong>.` :
+                                'Não há dados do mês anterior para comparação.'
+                            }
+                        </p>
+                        ${currentExpense > prevExpense && prevExpense > 0 ? 
+                            `<p style="margin-top: 0.3rem; color: #f43f5e;">⚠️ <strong>Atenção!</strong> Suas despesas aumentaram em relação ao mês anterior. É importante revisar onde está ocorrendo esse aumento.</p>` :
+                            currentExpense < prevExpense && prevExpense > 0 ?
+                            `<p style="margin-top: 0.3rem; color: #10b981;">✅ <strong>Parabéns!</strong> Você conseguiu reduzir suas despesas. Continue monitorando seus gastos!</p>` :
+                            ''
+                        }
+                    </div>
+                </div>
+            `;
+            
+            // 3. Categorias com maiores gastos
+            analiseHTML += `
+                <div class="conselho-card" style="margin-bottom: 1rem;">
+                    <div class="icone">🎯</div>
+                    <div class="titulo">Principais Gastos por Categoria</div>
+                    <div class="conteudo">
+                        <p>Suas <strong>5 maiores despesas</strong> do mês foram:</p>
+                        <ul style="margin-top: 0.5rem; list-style: none; padding: 0;">
+            `;
+            
+            topCategories.forEach(([cat, value], index) => {
+                const percent = currentExpense > 0 ? (value / currentExpense * 100) : 0;
+                const icons = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                analiseHTML += `
+                    <li style="display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span>${icons[index] || '•'} <strong>${cat}</strong></span>
+                        <span><strong class="destaque-vermelho">${formatCurrency(value)}</strong> (${percent.toFixed(0)}%)</span>
+                    </li>
+                `;
+            });
+            
+            analiseHTML += `
+                        </ul>
+                        ${topCategories.length > 0 && currentExpense > 0 ? 
+                            `<p style="margin-top: 0.5rem;">A categoria <strong class="destaque-roxo">${topCategories[0][0]}</strong> representa <strong class="destaque-vermelho">${(topCategories[0][1] / currentExpense * 100).toFixed(0)}%</strong> dos seus gastos totais.</p>` :
+                            ''
+                        }
+                    </div>
+                </div>
+            `;
+            
+            // 4. Conselhos para redução de gastos
+            analiseHTML += `
+                <div class="conselho-card" style="margin-bottom: 1rem; border-color: rgba(16, 185, 129, 0.3);">
+                    <div class="icone">💡</div>
+                    <div class="titulo" style="color: #10b981;">Conselhos do Contador para Reduzir Gastos</div>
+                    <div class="conteudo">
+            `;
+            
+            let conselhos = [];
+            
+            // Verificar categorias com gastos elevados
+            if (topCategories.length > 0) {
+                const maiorCat = topCategories[0];
+                const percentMaior = currentExpense > 0 ? (maiorCat[1] / currentExpense * 100) : 0;
+                if (percentMaior > 30) {
+                    conselhos.push(`🔴 <strong>Reduza gastos com "${maiorCat[0]}":</strong> Este gasto representa ${percentMaior.toFixed(0)}% do seu total. Considere buscar alternativas mais baratas, negociar preços ou reduzir o consumo nesta categoria.`);
+                }
+            }
+            
+            // Verificar aumento de despesas
+            if (currentExpense > prevExpense && prevExpense > 0) {
+                const aumento = ((currentExpense - prevExpense) / prevExpense * 100);
+                conselhos.push(`📈 <strong>Controle o aumento de despesas:</strong> Suas despesas aumentaram ${aumento.toFixed(1)}% em relação ao mês anterior. Revise cada categoria de gasto para identificar onde está ocorrendo esse aumento.`);
+            }
+            
+            // Verificar taxa de economia
+            const economia = currentIncome > 0 ? ((currentIncome - currentExpense) / currentIncome * 100) : 0;
+            if (economia < 10 && currentIncome > 0) {
+                conselhos.push(`💰 <strong>Aumente sua taxa de economia:</strong> Atualmente você economiza apenas ${economia.toFixed(0)}% da sua renda. Tente aumentar para pelo menos 20% reduzindo gastos desnecessários.`);
+            } else if (economia >= 20 && economia < 30) {
+                conselhos.push(`📊 <strong>Boa taxa de economia!</strong> Você está economizando ${economia.toFixed(0)}% da sua renda. Continue assim e tente chegar aos 30% para uma saúde financeira ainda melhor.`);
+            } else if (economia >= 30) {
+                conselhos.push(`🌟 <strong>Excelente!</strong> Sua taxa de economia é de ${economia.toFixed(0)}%. Você está no caminho certo para construir um patrimônio sólido.`);
+            }
+            
+            // Verificar despesas fixas
+            const despesasFixas = currentMonthTrans.filter(t => t.groupId && categoryMeta[t.category]?.type === 'expense');
+            const totalFixas = despesasFixas.reduce((s, t) => s + t.amount, 0);
+            if (totalFixas > 0 && currentExpense > 0) {
+                const percFixas = (totalFixas / currentExpense * 100);
+                if (percFixas > 60) {
+                    conselhos.push(`🏠 <strong>Revise suas despesas fixas:</strong> Elas representam ${percFixas.toFixed(0)}% dos seus gastos. Considere renegociar contratos, mudar de plano ou buscar opções mais econômicas para serviços essenciais.`);
+                }
+            }
+            
+            // Conselho geral se não houver específicos
+            if (conselhos.length === 0) {
+                conselhos.push(`📋 <strong>Continue monitorando:</strong> Suas finanças estão equilibradas. Continue registrando todos os gastos e revisando mensalmente para manter o controle.`);
+                conselhos.push(`🎯 <strong>Defina metas:</strong> Estabeleça objetivos financeiros claros, como uma reserva de emergência ou um investimento, para manter o foco e a disciplina.`);
+            }
+            
+            conselhos.forEach((conselho, index) => {
+                analiseHTML += `
+                    <p style="margin-top: ${index === 0 ? '0.3rem' : '0.7rem'}; padding-left: 0.5rem; border-left: 3px solid ${index === 0 ? '#10b981' : '#6366f1'};">
+                        ${conselho}
+                    </p>
+                `;
+            });
+            
+            analiseHTML += `
+                    </div>
+                </div>
+            `;
+            
+            // 5. Resumo executivo
+            analiseHTML += `
+                <div class="conselho-card" style="border-color: rgba(99, 102, 241, 0.3);">
+                    <div class="icone">📋</div>
+                    <div class="titulo" style="color: #818cf8;">Resumo Executivo</div>
+                    <div class="conteudo">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.3rem;">
+                            <div style="background: rgba(16, 185, 129, 0.05); padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                                <span style="font-size: 0.6rem; color: #64748b;">Saldo Atual</span>
+                                <p style="font-weight: 800; font-size: 1.1rem; ${currentBalance >= 0 ? 'color: #10b981;' : 'color: #f43f5e;'}">${formatCurrency(currentBalance)}</p>
+                            </div>
+                            <div style="background: rgba(99, 102, 241, 0.05); padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                                <span style="font-size: 0.6rem; color: #64748b;">Taxa de Economia</span>
+                                <p style="font-weight: 800; font-size: 1.1rem; ${economia >= 0 ? 'color: #10b981;' : 'color: #f43f5e;'}">${economia.toFixed(0)}%</p>
+                            </div>
+                        </div>
+                        <p style="margin-top: 0.7rem; font-size: 0.85rem; color: #94a3b8;">
+                            ${currentBalance >= 0 ? 
+                                `✅ Sua situação financeira está <strong class="destaque-bom">positiva</strong>. Continue acompanhando seus gastos e mantendo o controle.` :
+                                `⚠️ Sua situação financeira está <strong class="destaque-vermelho">negativa</strong>. Recomendamos revisar urgentemente seus gastos e buscar aumentar suas receitas.`
+                            }
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            // Data do relatório
             const agora = new Date();
-            document.getElementById('resumoDataHora').textContent = 
-                `Gerado em ${agora.toLocaleDateString('pt-PT')} às ${agora.toLocaleTimeString('pt-PT', {hour: '2-digit', minute: '2-digit'})}`;
+            analiseHTML += `
+                    <div class="assinatura" style="margin-top: 1.5rem;">
+                        <span><i class="fas fa-user-circle mr-1"></i> Finwise - Análise Inteligente</span>
+                        <span class="data-hora">Relatório gerado em ${agora.toLocaleDateString('pt-PT')} às ${agora.toLocaleTimeString('pt-PT', {hour: '2-digit', minute: '2-digit'})}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Adicionar à grid
+            const summaryCard = document.createElement('div');
+            summaryCard.className = 'report-card full-width';
+            summaryCard.innerHTML = analiseHTML;
+            grid.appendChild(summaryCard);
         }
 
         // ============ NOTIFICATIONS ============
@@ -3542,7 +3466,6 @@
             document.getElementById('categoryFilter').onchange = renderAll;
             document.getElementById('statusFilter').onchange = renderAll;
             document.getElementById('tagFilter').onchange = renderAll;
-            document.getElementById('compareMonthSelect').onchange = renderComparison;
             
             if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
                 Notification.requestPermission();
