@@ -1563,22 +1563,22 @@
                 <div id="comparisonContent">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <div class="stat-card text-center" id="compMonth1">
-                            <p class="text-[8px] text-slate-500 uppercase font-black">Mês 1</p>
+                            <p class="text-[8px] text-slate-500 uppercase font-black" id="compMonth1Label">Mês 1</p>
                             <p class="text-sm font-bold text-emerald-400 mt-1" id="compMonth1Income">R$ 0,00</p>
                             <p class="text-sm font-bold text-rose-400" id="compMonth1Expense">R$ 0,00</p>
                         </div>
                         <div class="stat-card text-center" id="compMonth2">
-                            <p class="text-[8px] text-slate-500 uppercase font-black">Mês 2</p>
+                            <p class="text-[8px] text-slate-500 uppercase font-black" id="compMonth2Label">Mês 2</p>
                             <p class="text-sm font-bold text-emerald-400 mt-1" id="compMonth2Income">R$ 0,00</p>
                             <p class="text-sm font-bold text-rose-400" id="compMonth2Expense">R$ 0,00</p>
                         </div>
                         <div class="stat-card text-center" id="compMonth3">
-                            <p class="text-[8px] text-slate-500 uppercase font-black">Mês 3</p>
+                            <p class="text-[8px] text-slate-500 uppercase font-black" id="compMonth3Label">Mês 3</p>
                             <p class="text-sm font-bold text-emerald-400 mt-1" id="compMonth3Income">R$ 0,00</p>
                             <p class="text-sm font-bold text-rose-400" id="compMonth3Expense">R$ 0,00</p>
                         </div>
                         <div class="stat-card text-center" id="compMonth4">
-                            <p class="text-[8px] text-slate-500 uppercase font-black">Mês 4</p>
+                            <p class="text-[8px] text-slate-500 uppercase font-black" id="compMonth4Label">Mês 4</p>
                             <p class="text-sm font-bold text-emerald-400 mt-1" id="compMonth4Income">R$ 0,00</p>
                             <p class="text-sm font-bold text-rose-400" id="compMonth4Expense">R$ 0,00</p>
                         </div>
@@ -2916,18 +2916,22 @@
             }).join('');
         }
 
-        // ============ COMPARAÇÃO - ÚLTIMOS 4 MESES ============
+        // ============ COMPARAÇÃO - ÚLTIMOS 4 MESES (VERSÃO CORRIGIDA) ============
         function renderComparison() {
             const currentMonth = filterMonth.value;
+            if (!currentMonth) return;
+            
             const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             
-            // Buscar os últimos 4 meses (mês atual + 3 anteriores)
+            // Coleta os dados dos últimos 4 meses na ordem correta (do mais antigo para o mais recente)
             const monthsData = [];
             
             for (let i = 3; i >= 0; i--) {
-                const d = new Date(currentMonth + '-01');
-                d.setMonth(d.getMonth() - i);
-                const key = d.toISOString().slice(0, 7);
+                // Criar a data base a partir do mês selecionado no filtro
+                const [year, month] = currentMonth.split('-').map(Number);
+                const d = new Date(year, month - 1 - i, 1);
+                
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                 
                 const monthTrans = transactions.filter(t => t.date.startsWith(key));
                 let income = 0, expense = 0;
@@ -2936,28 +2940,53 @@
                     else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') expense += t.amount;
                 });
                 
-                // Garantir que o mês seja adicionado mesmo com valores zerados
                 monthsData.push({
                     key: key,
-                    label: `${monthNames[d.getMonth()]}/${d.getFullYear().toString().slice(2)}`,
+                    label: `${monthNames[d.getMonth()]} ${d.getFullYear()}`,
                     income: income,
                     expense: expense,
                     balance: income - expense
                 });
             }
             
-            // Atualizar cards de resumo
+            // Atualizar os 4 cards de resumo com os dados corretos
+            const cards = [
+                { id: 'compMonth1', labelId: 'compMonth1Label', incomeId: 'compMonth1Income', expenseId: 'compMonth1Expense' },
+                { id: 'compMonth2', labelId: 'compMonth2Label', incomeId: 'compMonth2Income', expenseId: 'compMonth2Expense' },
+                { id: 'compMonth3', labelId: 'compMonth3Label', incomeId: 'compMonth3Income', expenseId: 'compMonth3Expense' },
+                { id: 'compMonth4', labelId: 'compMonth4Label', incomeId: 'compMonth4Income', expenseId: 'compMonth4Expense' }
+            ];
+            
             monthsData.forEach((data, index) => {
-                const num = index + 1;
-                document.getElementById(`compMonth${num}Income`).textContent = formatCurrency(data.income);
-                document.getElementById(`compMonth${num}Expense`).textContent = formatCurrency(data.expense);
-                document.getElementById(`compMonth${num}`).querySelector('.text-[8px]').textContent = data.label;
+                if (index < cards.length) {
+                    const card = cards[index];
+                    const labelEl = document.getElementById(card.labelId);
+                    if (labelEl) labelEl.textContent = data.label;
+                    
+                    const incomeEl = document.getElementById(card.incomeId);
+                    if (incomeEl) incomeEl.textContent = formatCurrency(data.income);
+                    
+                    const expenseEl = document.getElementById(card.expenseId);
+                    if (expenseEl) expenseEl.textContent = formatCurrency(data.expense);
+                }
             });
             
-            // Criar gráfico de barras - SEMPRE mostrar, mesmo com dados zerados
-            if (charts.comparison) charts.comparison.destroy();
+            // Renderizar o Gráfico de Barras com os 4 meses garantidos sem repetição
+            const ctx = document.getElementById('comparisonChart');
+            if (!ctx) return;
             
-            charts.comparison = new Chart(document.getElementById('comparisonChart'), {
+            if (charts.comparison) {
+                charts.comparison.destroy();
+                charts.comparison = null;
+            }
+            
+            const maxValue = Math.max(
+                ...monthsData.map(d => d.income),
+                ...monthsData.map(d => d.expense),
+                100
+            );
+            
+            charts.comparison = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: monthsData.map(d => d.label),
@@ -2968,7 +2997,8 @@
                             backgroundColor: 'rgba(16, 185, 129, 0.8)',
                             borderColor: '#10b981',
                             borderWidth: 2,
-                            borderRadius: 4
+                            borderRadius: 6,
+                            minBarLength: 3
                         },
                         {
                             label: 'Despesas',
@@ -2976,7 +3006,8 @@
                             backgroundColor: 'rgba(244, 63, 94, 0.8)',
                             borderColor: '#f43f5e',
                             borderWidth: 2,
-                            borderRadius: 4
+                            borderRadius: 6,
+                            minBarLength: 3
                         }
                     ]
                 },
@@ -2995,7 +3026,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                    return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
                                 }
                             }
                         }
@@ -3017,7 +3048,8 @@
                                 }
                             },
                             grid: { color: 'rgba(71, 85, 105, 0.1)' },
-                            beginAtZero: true
+                            beginAtZero: true,
+                            suggestedMax: maxValue * 1.2
                         }
                     }
                 }
