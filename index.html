@@ -1909,7 +1909,18 @@
         const amountInput = document.getElementById('amount');
         const goalAmountInput = document.getElementById('goalTarget');
         const fundAmountInput = document.getElementById('fundAmount');
-        let charts = { line: null, donut: null, comparison: null, chart12Months: null, chartIncomeExpense: null, chartDailyExpenses: null, chartWeeklyFlow: null, categoryAnalysis: null };
+        let charts = { 
+            line: null, 
+            donut: null, 
+            comparison: null, 
+            chart12Months: null, 
+            chartIncomeExpense: null, 
+            chartDailyExpenses: null, 
+            chartWeeklyFlow: null, 
+            categoryAnalysis: null,
+            compareMonths: null,
+            accumulatedYear: null
+        };
         let currentEntryType = 'expense';
         let transactionToDeleteId = null;
         let editStatusValue = false;
@@ -2895,7 +2906,7 @@
             const month = filterMonth.value;
             const todayStr = new Date().toISOString().slice(0, 10);
             
-            // --- SALDO REMANESCENTE GLOBAL (TODAS AS TRANSAÇÕES PAGAS) ---
+            // --- SALDO REMANESCENTE GLOBAL ---
             const allPaid = transactions.filter(t => t.paid === true);
             let totalPaidInc = 0, totalPaidExp = 0;
             allPaid.forEach(t => {
@@ -2904,7 +2915,7 @@
             });
             const saldoRemanescente = totalPaidInc - totalPaidExp;
 
-            // --- PREVISÃO DO MÊS SELECIONADO (TODAS AS TRANSAÇÕES, PAGAS E PENDENTES) ---
+            // --- MÊS ATUAL ---
             const allMonthly = transactions.filter(t => t.date.startsWith(month));
             let prevIncome = 0, prevExpense = 0, paidIncome = 0, paidExpense = 0, pendIncome = 0, pendExpense = 0;
             
@@ -2923,18 +2934,15 @@
                 }
             });
             
-            const forecastBalance = prevIncome - prevExpense;
             const paidBalance = paidIncome - paidExpense;
-
-            // --- SALDO DO MÊS SELECIONADO (APENAS PAGAS) ---
             const totalInc = paidIncome;
             const totalExp = paidExpense;
             const totalBalance = paidBalance;
 
-            // --- MÊS ANTERIOR (APENAS PAGAS PARA COMPARAÇÃO) ---
-            const prevMonth = new Date(month);
-            prevMonth.setMonth(prevMonth.getMonth() - 1);
-            const prevKey = prevMonth.toISOString().slice(0, 7);
+            // --- MÊS ANTERIOR ---
+            const [curYear, curMonthNum] = month.split('-').map(Number);
+            const prevMonthDate = new Date(curYear, curMonthNum - 2, 1);
+            const prevKey = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
             const prevMonthly = transactions.filter(t => t.date.startsWith(prevKey) && t.paid === true);
             let prevIncComp = 0, prevExpComp = 0;
             prevMonthly.forEach(t => {
@@ -2946,8 +2954,8 @@
             let trendText = '', trendClass = '', trendIcon = '';
             let variation = 0;
             const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            const currentMonthName = monthNames[new Date(month).getMonth()];
-            const prevMonthName = monthNames[prevMonth.getMonth()];
+            const currentMonthName = monthNames[curMonthNum - 1];
+            const prevMonthName = monthNames[prevMonthDate.getMonth()];
 
             if (prevBalanceComp === 0 && totalBalance === 0) {
                 trendText = 'Sem dados anteriores';
@@ -2975,7 +2983,7 @@
                 }
             }
 
-            // --- CONTAS VENCIDAS (INDEPENDENTE DO MÊS SELECIONADO) ---
+            // --- CONTAS VENCIDAS ---
             const allOverdue = transactions.filter(t => !t.paid && t.date < todayStr && categoryMeta[t.category]?.type === 'expense');
             const overdueCount = allOverdue.length;
             const overdueTotal = allOverdue.reduce((s, t) => s + t.amount, 0);
@@ -2986,54 +2994,31 @@
             const dueTodayTotal = dueToday.reduce((s, t) => s + t.amount, 0);
 
             const cards = [
-                // ===== NOVO CARD: PREVISÃO DO MÊS =====
-                { id: 'forecast', className: 'col-span-full border-l-4 border-l-purple-500', content: `
+                // ===== CARD: MÊS ANTERIOR =====
+                { id: 'prev_month', className: 'col-span-full border-l-4 border-l-purple-500', content: `
                     <div class="flex justify-between items-center mb-3">
                         <div class="flex items-center gap-2">
-                            <i class="fas fa-crystal-ball text-purple-400 text-lg"></i>
-                            <span class="text-slate-300 text-xs font-extrabold uppercase tracking-widest">Previsão do Mês - ${currentMonthName}</span>
+                            <i class="fas fa-history text-purple-400 text-lg"></i>
+                            <span class="text-slate-300 text-xs font-extrabold uppercase tracking-widest">Mês Anterior - ${prevMonthName}</span>
                         </div>
-                        <span class="bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-[9px] font-extrabold">Projeção Total</span>
+                        <span class="bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-[9px] font-extrabold">Resumo</span>
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="text-center">
-                            <p class="text-[9px] text-slate-500 font-extrabold uppercase tracking-widest mb-1">Receitas Previstas</p>
-                            <p class="text-lg font-black text-emerald-400">${formatCurrency(prevIncome)}</p>
-                            <p class="text-[8px] text-slate-500">${formatCurrency(paidIncome)} pagas + ${formatCurrency(pendIncome)} pendentes</p>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-[9px] text-slate-500 font-extrabold uppercase tracking-widest mb-1">Despesas Previstas</p>
-                            <p class="text-lg font-black text-rose-400">${formatCurrency(prevExpense)}</p>
-                            <p class="text-[8px] text-slate-500">${formatCurrency(paidExpense)} pagas + ${formatCurrency(pendExpense)} pendentes</p>
+                            <p class="text-[9px] text-slate-500 font-extrabold uppercase tracking-widest mb-1">Receitas Recebidas</p>
+                            <p class="text-lg font-black text-emerald-400">${formatCurrency(prevIncComp)}</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-[9px] text-slate-500 font-extrabold uppercase tracking-widest mb-1">Saldo Previsto</p>
-                            <p class="text-lg font-black ${forecastBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(forecastBalance)}</p>
-                            <p class="text-[8px] text-slate-500">Se tudo for pago/recebido</p>
+                            <p class="text-[9px] text-slate-500 font-extrabold uppercase tracking-widest mb-1">Despesas Pagas</p>
+                            <p class="text-lg font-black text-rose-400">${formatCurrency(prevExpComp)}</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-[9px] text-slate-500 font-extrabold uppercase tracking-widest mb-1">Saldo Realizado</p>
-                            <p class="text-lg font-black ${paidBalance >= 0 ? 'text-cyan-400' : 'text-rose-400'}">${formatCurrency(paidBalance)}</p>
-                            <p class="text-[8px] text-slate-500">Apenas o que já foi pago</p>
-                        </div>
-                    </div>
-                    <div class="bg-slate-800/30 rounded-xl p-3">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[10px] font-bold text-slate-400">Progresso do Mês</span>
-                            <span class="text-[10px] font-bold text-slate-300">${prevExpense > 0 ? ((paidExpense / prevExpense) * 100).toFixed(0) : 0}% das despesas pagas</span>
-                        </div>
-                        <div class="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-rose-500 to-rose-400 rounded-full transition-all duration-1000" style="width: ${prevExpense > 0 ? (paidExpense / prevExpense) * 100 : 0}%"></div>
-                        </div>
-                        <div class="flex justify-between items-center mt-2">
-                            <span class="text-[10px] font-bold text-slate-400">Receitas recebidas</span>
-                            <span class="text-[10px] font-bold text-emerald-400">${prevIncome > 0 ? ((paidIncome / prevIncome) * 100).toFixed(0) : 0}%</span>
-                        </div>
-                        <div class="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-1000" style="width: ${prevIncome > 0 ? (paidIncome / prevIncome) * 100 : 0}%"></div>
+                            <p class="text-[9px] text-slate-500 font-extrabold uppercase tracking-widest mb-1">Saldo</p>
+                            <p class="text-lg font-black ${prevBalanceComp >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(prevBalanceComp)}</p>
                         </div>
                     </div>
                 `},
+
                 // ===== CARD SALDO REMANESCENTE GLOBAL =====
                 { id: 'saldo_global', className: 'col-span-full lg:col-span-2 border-l-4 border-l-emerald-400', content: `
                     <div class="flex justify-between items-center mb-2">
@@ -3047,7 +3032,6 @@
                     </div>
                     <p class="text-[8px] text-slate-500 mt-1">Saldo de todas as transações pagas (independente do período)</p>
                 `},
-                // ===== CARD SALDO MENSAL PAGO =====
                 { id: 'balance', className: 'col-span-full lg:col-span-2 border-l-4 border-l-cyan-400', content: `
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">Saldo Mensal (Pago)</span>
@@ -3110,10 +3094,40 @@
                     </div>
                     ${dueTodayCount > 0 ? `<p class="text-[8px] text-amber-500/70 mt-1">⏰ ${dueTodayCount} conta(s) vencem hoje!</p>` : '<p class="text-[8px] text-slate-500/70 mt-1">Nenhuma conta vence hoje</p>'}
                 `},
-                { id: 'recent', className: 'col-span-full lg:col-span-2 lg:row-span-3', content: `
-                    <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-4">Movimentações Recentes</p>
-                    <div id="latestActivity" class="space-y-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar"></div>
+                // ===== CARD: COMPARAÇÃO MÊS ATUAL vs MÊS ANTERIOR =====
+                { id: 'compare_months', className: 'col-span-full lg:col-span-2 border-l-4 border-l-indigo-500', content: `
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-arrows-left-right text-indigo-400 text-lg"></i>
+                            <span class="text-slate-300 text-xs font-extrabold uppercase tracking-widest">Comparação Direta</span>
+                        </div>
+                        <span class="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-[9px] font-extrabold">${prevMonthName} vs ${currentMonthName}</span>
+                    </div>
+                    <div class="h-[200px]">
+                        <canvas id="compareMonthsChart"></canvas>
+                    </div>
                 `},
+
+                // ===== CARD: SALDO ACUMULADO DO ANO =====
+                { id: 'accumulated_year', className: 'col-span-full lg:col-span-2 border-l-4 border-l-cyan-500', content: `
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-chart-line text-cyan-400 text-lg"></i>
+                            <span class="text-slate-300 text-xs font-extrabold uppercase tracking-widest">Saldo Acumulado do Ano</span>
+                        </div>
+                        <span class="bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full text-[9px] font-extrabold">${curYear}</span>
+                    </div>
+                    <div class="h-[200px]">
+                        <canvas id="accumulatedYearChart"></canvas>
+                    </div>
+                `},
+
+                // ===== CARD: MOVIMENTAÇÕES RECENTES =====
+                { id: 'recent', className: 'col-span-full', content: `
+                    <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-4">Movimentações Recentes</p>
+                    <div id="latestActivity" class="space-y-3 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar"></div>
+                `},
+
                 { id: 'donut', className: 'col-span-full lg:col-span-2 lg:row-span-2', content: `
                     <h3 class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-4">Gastos por Categoria (Mês)</h3>
                     <div class="flex flex-col md:flex-row items-center gap-6">
@@ -3158,9 +3172,177 @@
                 }).join('');
 
             renderAnalisesInsideDashboard(allMonthly);
+            renderCompareMonthsChart(month, prevKey, monthNames);
+            renderAccumulatedYearChart(month);
         }
 
-        // ============ RENDER ANÁLISES (ATUALIZADO PARA USAR DADOS DO MÊS) ============
+        // ============ GRÁFICO: COMPARAÇÃO MÊS ATUAL vs ANTERIOR ============
+        function renderCompareMonthsChart(month, prevKey, monthNames) {
+            const canvas = document.getElementById('compareMonthsChart');
+            if (!canvas) return;
+            
+            const prevTrans = transactions.filter(t => t.date.startsWith(prevKey) && t.paid === true);
+            let prevInc = 0, prevExp = 0;
+            prevTrans.forEach(t => {
+                if (categoryMeta[t.category]?.type === 'income') prevInc += t.amount;
+                else if (categoryMeta[t.category]?.type === 'expense') prevExp += t.amount;
+            });
+            
+            const currTrans = transactions.filter(t => t.date.startsWith(month) && t.paid === true);
+            let currInc = 0, currExp = 0;
+            currTrans.forEach(t => {
+                if (categoryMeta[t.category]?.type === 'income') currInc += t.amount;
+                else if (categoryMeta[t.category]?.type === 'expense') currExp += t.amount;
+            });
+            
+            const prevMonthIdx = new Date(prevKey + '-01T12:00:00').getMonth();
+            const currMonthIdx = new Date(month + '-01T12:00:00').getMonth();
+            
+            if (charts.compareMonths) charts.compareMonths.destroy();
+            charts.compareMonths = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: ['Receitas', 'Despesas'],
+                    datasets: [
+                        {
+                            label: monthNames[prevMonthIdx],
+                            data: [prevInc, prevExp],
+                            backgroundColor: 'rgba(148, 163, 184, 0.5)',
+                            borderColor: '#94a3b8',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        },
+                        {
+                            label: monthNames[currMonthIdx],
+                            data: [currInc, currExp],
+                            backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                            borderColor: '#6366f1',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#64748b',
+                                font: { size: 10, weight: 'bold' },
+                                boxWidth: 12,
+                                padding: 10
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8', font: { size: 10, weight: 'bold' } },
+                            grid: { display: false }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#475569',
+                                font: { size: 9 },
+                                callback: v => 'R$' + v.toFixed(0)
+                            },
+                            grid: { color: 'rgba(71, 85, 105, 0.1)' },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============ GRÁFICO: SALDO ACUMULADO DO ANO ============
+        function renderAccumulatedYearChart(month) {
+            const canvas = document.getElementById('accumulatedYearChart');
+            if (!canvas) return;
+            
+            const year = new Date(month + '-01T12:00:00').getFullYear();
+            const monthNamesShort = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            const currentMonthIdx = new Date(month + '-01T12:00:00').getMonth();
+            
+            const labels = [];
+            const balanceData = [];
+            let accumulated = 0;
+            
+            for (let i = 0; i <= currentMonthIdx; i++) {
+                const key = `${year}-${String(i + 1).padStart(2, '0')}`;
+                const monthTrans = transactions.filter(t => t.date.startsWith(key) && t.paid === true);
+                let inc = 0, exp = 0;
+                monthTrans.forEach(t => {
+                    if (categoryMeta[t.category]?.type === 'income') inc += t.amount;
+                    else if (categoryMeta[t.category]?.type === 'expense') exp += t.amount;
+                });
+                accumulated += (inc - exp);
+                
+                labels.push(monthNamesShort[i]);
+                balanceData.push(accumulated);
+            }
+            
+            if (charts.accumulatedYear) charts.accumulatedYear.destroy();
+            charts.accumulatedYear = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Saldo Acumulado',
+                            data: balanceData,
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.15)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#06b6d4',
+                            pointBorderColor: '#0f172a',
+                            pointBorderWidth: 2,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#64748b',
+                                font: { size: 10, weight: 'bold' },
+                                boxWidth: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `Saldo: ${formatCurrency(ctx.parsed.y)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8', font: { size: 9, weight: 'bold' } },
+                            grid: { color: 'rgba(71, 85, 105, 0.1)' }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#475569',
+                                font: { size: 9 },
+                                callback: v => 'R$' + v.toFixed(0)
+                            },
+                            grid: { color: 'rgba(71, 85, 105, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============ RENDER ANÁLISES ============
         function renderAnalisesInsideDashboard(filtered) {
             const expenses = filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense');
             const totalExp = expenses.reduce((s, t) => s + t.amount, 0);
@@ -3402,9 +3584,9 @@
                 else if (categoryMeta[t.category] && categoryMeta[t.category].type === 'expense') currentExpense += t.amount;
             });
             
-            const prevDate = new Date(month + '-01');
-            prevDate.setMonth(prevDate.getMonth() - 1);
-            const prevKey = prevDate.toISOString().slice(0, 7);
+            const [curY, curM] = month.split('-').map(Number);
+            const prevDate = new Date(curY, curM - 2, 1);
+            const prevKey = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
             const prevMonthTrans = transactions.filter(t => t.date.startsWith(prevKey));
             let prevIncome = 0, prevExpense = 0;
             prevMonthTrans.forEach(t => {
