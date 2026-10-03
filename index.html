@@ -3978,10 +3978,13 @@
             populateTagFilter();
         }
 
-        // ============ CALCULADORA FLUTUANTE ============
+        // ================================================================
+        // ============ CALCULADORA FLUTUANTE (CORRIGIDA) =================
+        // ================================================================
         let calcExpression = '';
         let calcHistory = JSON.parse(localStorage.getItem('finwise_calc_history')) || [];
         let calcOpen = false;
+        let calcJustEvaluated = false;
 
         function toggleCalculator() {
             calcOpen = !calcOpen;
@@ -3991,7 +3994,7 @@
             btn.classList.toggle('active', calcOpen);
             if (calcOpen) {
                 renderCalcHistory();
-                document.getElementById('calcExpression').textContent = calcExpression || '';
+                document.getElementById('calcExpression').textContent = formatExpressionDisplay(calcExpression);
             }
         }
 
@@ -4026,18 +4029,40 @@
             const item = calcHistory[index];
             if (!item) return;
             calcExpression = item.expr.replace(/×/g, '*').replace(/÷/g, '/');
-            document.getElementById('calcExpression').textContent = calcExpression;
+            calcJustEvaluated = false;
+            document.getElementById('calcExpression').textContent = formatExpressionDisplay(calcExpression);
             updateCalcPreview();
         }
 
+        // Exibe a expressão trocando * e / pelos símbolos visuais
+        function formatExpressionDisplay(expr) {
+            if (!expr) return '';
+            return expr.replace(/\*/g, '×').replace(/\//g, '÷');
+        }
+
         function calcInsert(value) {
-            calcExpression += value;
-            document.getElementById('calcExpression').textContent = calcExpression;
+            // Se o último cálculo foi avaliado e o usuário digita um número,
+            // começamos uma nova expressão. Se digita um operador, continuamos.
+            if (calcJustEvaluated) {
+                const isOperator = ['+', '-', '×', '÷', '*', '/'].includes(value);
+                if (isOperator) {
+                    // Continua a partir do resultado
+                    calcExpression = calcExpression + value;
+                } else {
+                    // Começa nova expressão
+                    calcExpression = value;
+                }
+                calcJustEvaluated = false;
+            } else {
+                calcExpression += value;
+            }
+            document.getElementById('calcExpression').textContent = formatExpressionDisplay(calcExpression);
             updateCalcPreview();
         }
 
         function calcClear() {
             calcExpression = '';
+            calcJustEvaluated = false;
             document.getElementById('calcExpression').textContent = '';
             const resultEl = document.getElementById('calcResult');
             resultEl.textContent = '0';
@@ -4045,8 +4070,13 @@
         }
 
         function calcBackspace() {
+            if (calcJustEvaluated) {
+                // Se acabou de avaliar, backspace limpa tudo
+                calcClear();
+                return;
+            }
             calcExpression = calcExpression.slice(0, -1);
-            document.getElementById('calcExpression').textContent = calcExpression;
+            document.getElementById('calcExpression').textContent = formatExpressionDisplay(calcExpression);
             updateCalcPreview();
         }
 
@@ -4094,6 +4124,23 @@
             return result;
         }
 
+        // Converte um number JS (ex: 1234.56) para string BR (ex: "1.234,56")
+        function numberToBR(num) {
+            if (typeof num !== 'number' || !isFinite(num)) return '0';
+            const rounded = parseFloat(num.toFixed(6));
+            const [intPart, decPart] = rounded.toString().split('.');
+            const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            return decPart ? `${intFormatted},${decPart}` : intFormatted;
+        }
+
+        // Formata uma string numérica (com ponto decimal) para exibição BR
+        function formatNumberBR(numStr) {
+            if (numStr === '' || numStr === null || numStr === undefined) return '0';
+            const num = parseFloat(numStr);
+            if (isNaN(num)) return numStr;
+            return numberToBR(num);
+        }
+
         function updateCalcPreview() {
             const resultEl = document.getElementById('calcResult');
             if (!calcExpression) {
@@ -4104,22 +4151,12 @@
             try {
                 const exprToEval = autoClose(calcExpression);
                 const result = evaluateExpression(exprToEval);
-                const formatted = Number.isInteger(result)
-                    ? result.toString()
-                    : parseFloat(result.toFixed(6)).toString();
-                const display = formatNumberBR(formatted);
-                resultEl.textContent = display;
+                resultEl.textContent = numberToBR(result);
                 resultEl.className = 'calc-result preview';
             } catch (e) {
                 resultEl.textContent = '...';
                 resultEl.className = 'calc-result preview';
             }
-        }
-
-        function formatNumberBR(numStr) {
-            const [intPart, decPart] = numStr.split('.');
-            const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            return decPart ? `${intFormatted},${decPart}` : intFormatted;
         }
 
         function calcEquals() {
@@ -4128,30 +4165,33 @@
             try {
                 const exprToEval = autoClose(calcExpression);
                 const result = evaluateExpression(exprToEval);
-                const formatted = Number.isInteger(result)
-                    ? result.toString()
-                    : parseFloat(result.toFixed(6)).toString();
-                const display = formatNumberBR(formatted);
+                const numResult = parseFloat(result.toFixed(6));
+                const display = numberToBR(numResult);
 
+                // Guarda no histórico
                 calcHistory.unshift({
-                    expr: calcExpression,
+                    expr: formatExpressionDisplay(calcExpression),
                     result: display,
                     timestamp: Date.now()
                 });
                 saveCalcHistory();
                 renderCalcHistory();
 
+                // Atualiza display
                 resultEl.textContent = display;
                 resultEl.className = 'calc-result success';
+                document.getElementById('calcExpression').textContent = formatExpressionDisplay(calcExpression) + ' =';
 
-                document.getElementById('calcExpression').textContent = calcExpression + ' =';
+                // Guarda o valor cru (com ponto decimal) para continuar calculando
+                calcExpression = numResult.toString();
+                calcJustEvaluated = true;
 
-                calcExpression = formatted.replace(/\./g, '').replace(',', '.');
-                setTimeout(() => {
-                    if (calcExpression) {
-                        document.getElementById('calcExpression').textContent = formatNumberBR(calcExpression);
-                    }
-                }, 400);
+                // Atualiza a expressão mostrada para exibir apenas o resultado
+                // (usa requestAnimationFrame, que roda imediatamente após o paint atual,
+                // sem risco de sobrescrever digitação posterior do usuário)
+                requestAnimationFrame(() => {
+                    document.getElementById('calcExpression').textContent = display;
+                });
             } catch (e) {
                 resultEl.textContent = 'Erro';
                 resultEl.className = 'calc-result error';
