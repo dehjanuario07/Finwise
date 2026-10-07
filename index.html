@@ -799,33 +799,6 @@
             border-color: rgba(99, 102, 241, 0.3);
         }
 
-        /* ===== COMPARISON TABLE ===== */
-        .comparison-table {
-            width: 100%;
-            font-size: 0.7rem;
-            border-collapse: collapse;
-        }
-        .comparison-table th {
-            text-align: left;
-            padding: 0.5rem 0.25rem;
-            color: var(--text-secondary);
-            font-weight: 800;
-            text-transform: uppercase;
-            font-size: 0.5rem;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .comparison-table td {
-            padding: 0.4rem 0.25rem;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
-        }
-        .comparison-table tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-        .comparison-table .trend-up { color: #f43f5e; }
-        .comparison-table .trend-down { color: #10b981; }
-
         /* ===== TREND INDICATOR ===== */
         .trend-indicator {
             display: inline-flex;
@@ -939,7 +912,9 @@
             margin-bottom: 0.5rem;
         }
 
-        /* ===== CALCULADORA FLUTUANTE ===== */
+        /* ================================================================
+           ============ CALCULADORA FLUTUANTE - NOVO LAYOUT ===============
+           ================================================================ */
         .calc-toggle-btn {
             position: fixed;
             bottom: 24px;
@@ -973,7 +948,7 @@
             bottom: 100px;
             right: 24px;
             z-index: 9997;
-            width: 320px;
+            width: 340px;
             max-width: calc(100vw - 32px);
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
@@ -1061,23 +1036,29 @@
         .calc-result.success { color: #10b981; }
         .calc-result.preview { color: #94a3b8; font-size: 1.3rem; }
 
+        /* ===== GRID 5×5 com posicionamento explícito ===== */
         .calc-buttons {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, minmax(48px, auto));
             gap: 0.4rem;
         }
+
         .calc-btn {
-            padding: 0.85rem 0.4rem;
-            border-radius: 0.75rem;
-            border: none;
+            padding: 0.75rem 0.3rem;
+            border-radius: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: 800;
             transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
             color: #e2e8f0;
             background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.05);
             user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
         }
         .calc-btn:hover {
             transform: translateY(-1px);
@@ -1087,47 +1068,98 @@
         .calc-btn:active {
             transform: scale(0.96);
         }
+
+        /* Operadores: mesma cor consistente (indigo) */
         .calc-btn.op {
-            background: rgba(99, 102, 241, 0.15);
-            color: #818cf8;
-            border-color: rgba(99, 102, 241, 0.2);
+            background: rgba(99, 102, 241, 0.18);
+            color: #a5b4fc;
+            border-color: rgba(99, 102, 241, 0.3);
+            font-size: 1.2rem;
         }
         .calc-btn.op:hover {
-            background: rgba(99, 102, 241, 0.25);
+            background: rgba(99, 102, 241, 0.32);
+            border-color: rgba(99, 102, 241, 0.5);
+            color: #ffffff;
         }
-        .calc-btn.func {
-            background: rgba(244, 63, 94, 0.1);
-            color: #fb7185;
-            border-color: rgba(244, 63, 94, 0.15);
-        }
-        .calc-btn.func:hover {
-            background: rgba(244, 63, 94, 0.2);
-        }
-        .calc-btn.equals {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-            grid-column: span 2;
-        }
-        .calc-btn.equals:hover {
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
-        }
-        .calc-btn.clear-all {
-            background: linear-gradient(135deg, #f43f5e, #e11d48);
-            color: white;
-            box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
-        }
-        .calc-btn.clear-all:hover {
-            box-shadow: 0 6px 20px rgba(244, 63, 94, 0.5);
-        }
+
+        /* Parênteses e % */
         .calc-btn.paren {
             background: rgba(167, 139, 250, 0.15);
-            color: #a78bfa;
-            border-color: rgba(167, 139, 250, 0.2);
+            color: #c4b5fd;
+            border-color: rgba(167, 139, 250, 0.25);
+            font-size: 1.15rem;
         }
         .calc-btn.paren:hover {
-            background: rgba(167, 139, 250, 0.25);
+            background: rgba(167, 139, 250, 0.28);
         }
+
+        /* Backspace */
+        .calc-btn.func {
+            background: rgba(244, 63, 94, 0.12);
+            color: #fda4af;
+            border-color: rgba(244, 63, 94, 0.2);
+        }
+        .calc-btn.func:hover {
+            background: rgba(244, 63, 94, 0.25);
+            color: #fff;
+        }
+
+        /* AC - ocupa linhas 1 e 2 da coluna 5 */
+        .calc-btn.clear-all {
+            background: linear-gradient(160deg, #6366f1, #4f46e5);
+            color: white;
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+        .calc-btn.clear-all:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+            transform: translateY(-1px);
+        }
+
+        /* = - ocupa linhas 4 e 5 da coluna 5 */
+        .calc-btn.equals {
+            background: linear-gradient(160deg, #10b981, #059669);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 900;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+        }
+        .calc-btn.equals:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55);
+            transform: translateY(-1px);
+        }
+
+        /* ===== POSICIONAMENTO EXPLÍCITO DOS BOTÕES =====
+           Cada botão tem data-cell="linha/coluna" para evitar que
+           o auto-flow do grid "empurre" botões pra células vazias. */
+        .calc-btn[data-cell="1/1"] { grid-row: 1; grid-column: 1; }
+        .calc-btn[data-cell="1/2"] { grid-row: 1; grid-column: 2; }
+        .calc-btn[data-cell="1/3"] { grid-row: 1; grid-column: 3; }
+        .calc-btn[data-cell="1/4"] { grid-row: 1; grid-column: 4; }
+        .calc-btn[data-cell="1/5"] { grid-row: 1 / span 2; grid-column: 5; }
+
+        .calc-btn[data-cell="2/1"] { grid-row: 2; grid-column: 1; }
+        .calc-btn[data-cell="2/2"] { grid-row: 2; grid-column: 2; }
+        .calc-btn[data-cell="2/3"] { grid-row: 2; grid-column: 3; }
+        .calc-btn[data-cell="2/4"] { grid-row: 2; grid-column: 4; }
+
+        .calc-btn[data-cell="3/1"] { grid-row: 3; grid-column: 1; }
+        .calc-btn[data-cell="3/2"] { grid-row: 3; grid-column: 2; }
+        .calc-btn[data-cell="3/3"] { grid-row: 3; grid-column: 3; }
+        .calc-btn[data-cell="3/4"] { grid-row: 3; grid-column: 4; }
+
+        .calc-btn[data-cell="4/1"] { grid-row: 4; grid-column: 1; }
+        .calc-btn[data-cell="4/2"] { grid-row: 4; grid-column: 2; }
+        .calc-btn[data-cell="4/3"] { grid-row: 4; grid-column: 3; }
+        .calc-btn[data-cell="4/4"] { grid-row: 4; grid-column: 4; }
+        .calc-btn[data-cell="4/5"] { grid-row: 4 / span 2; grid-column: 5; }
+
+        .calc-btn[data-cell="5/1"] { grid-row: 5; grid-column: 1; }
+        .calc-btn[data-cell="5/2"] { grid-row: 5; grid-column: 2; }
+        .calc-btn[data-cell="5/3"] { grid-row: 5; grid-column: 3; }
+        .calc-btn[data-cell="5/4"] { grid-row: 5; grid-column: 4; }
 
         .calc-history {
             margin-top: 0.6rem;
@@ -1166,9 +1198,10 @@
 
         @media (max-width: 640px) {
             .calc-toggle-btn { bottom: 16px; right: 16px; width: 52px; height: 52px; font-size: 18px; }
-            .calc-panel { bottom: 84px; right: 16px; padding: 1rem; width: 300px; }
+            .calc-panel { bottom: 84px; right: 16px; padding: 0.9rem; width: 310px; }
             .calc-result { font-size: 1.4rem; }
-            .calc-btn { padding: 0.7rem 0.3rem; font-size: 0.9rem; }
+            .calc-btn { padding: 0.6rem 0.2rem; font-size: 0.95rem; min-height: 42px; }
+            .calc-buttons { gap: 0.3rem; grid-template-rows: repeat(5, minmax(42px, auto)); }
         }
     </style>
 </head>
@@ -1528,30 +1561,37 @@
         </div>
 
         <div class="calc-buttons">
-            <button class="calc-btn clear-all" onclick="calcClear()">AC</button>
-            <button class="calc-btn func" onclick="calcBackspace()"><i class="fas fa-delete-left"></i></button>
-            <button class="calc-btn paren" onclick="calcInsert('(')">(</button>
-            <button class="calc-btn paren" onclick="calcInsert(')')">)</button>
+            <!-- LINHA 1 -->
+            <button class="calc-btn paren" data-cell="1/1" onclick="calcInsert('(')">(</button>
+            <button class="calc-btn paren" data-cell="1/2" onclick="calcInsert(')')">)</button>
+            <button class="calc-btn paren" data-cell="1/3" onclick="calcInsert('%')">%</button>
+            <button class="calc-btn func" data-cell="1/4" onclick="calcBackspace()"><i class="fas fa-delete-left"></i></button>
+            <button class="calc-btn clear-all" data-cell="1/5" onclick="calcClear()">AC</button>
 
-            <button class="calc-btn" onclick="calcInsert('7')">7</button>
-            <button class="calc-btn" onclick="calcInsert('8')">8</button>
-            <button class="calc-btn" onclick="calcInsert('9')">9</button>
-            <button class="calc-btn op" onclick="calcInsert('÷')">÷</button>
+            <!-- LINHA 2 -->
+            <button class="calc-btn" data-cell="2/1" onclick="calcInsert('7')">7</button>
+            <button class="calc-btn" data-cell="2/2" onclick="calcInsert('8')">8</button>
+            <button class="calc-btn" data-cell="2/3" onclick="calcInsert('9')">9</button>
+            <button class="calc-btn op" data-cell="2/4" onclick="calcInsert('÷')">÷</button>
 
-            <button class="calc-btn" onclick="calcInsert('4')">4</button>
-            <button class="calc-btn" onclick="calcInsert('5')">5</button>
-            <button class="calc-btn" onclick="calcInsert('6')">6</button>
-            <button class="calc-btn op" onclick="calcInsert('×')">×</button>
+            <!-- LINHA 3 -->
+            <button class="calc-btn" data-cell="3/1" onclick="calcInsert('4')">4</button>
+            <button class="calc-btn" data-cell="3/2" onclick="calcInsert('5')">5</button>
+            <button class="calc-btn" data-cell="3/3" onclick="calcInsert('6')">6</button>
+            <button class="calc-btn op" data-cell="3/4" onclick="calcInsert('×')">×</button>
 
-            <button class="calc-btn" onclick="calcInsert('1')">1</button>
-            <button class="calc-btn" onclick="calcInsert('2')">2</button>
-            <button class="calc-btn" onclick="calcInsert('3')">3</button>
-            <button class="calc-btn op" onclick="calcInsert('-')">−</button>
+            <!-- LINHA 4 -->
+            <button class="calc-btn" data-cell="4/1" onclick="calcInsert('1')">1</button>
+            <button class="calc-btn" data-cell="4/2" onclick="calcInsert('2')">2</button>
+            <button class="calc-btn" data-cell="4/3" onclick="calcInsert('3')">3</button>
+            <button class="calc-btn op" data-cell="4/4" onclick="calcInsert('-')">−</button>
+            <button class="calc-btn equals" data-cell="4/5" onclick="calcEquals()">=</button>
 
-            <button class="calc-btn" onclick="calcInsert('0')">0</button>
-            <button class="calc-btn" onclick="calcInsert('.')">,</button>
-            <button class="calc-btn equals" onclick="calcEquals()">=</button>
-            <button class="calc-btn op" onclick="calcInsert('+')">+</button>
+            <!-- LINHA 5 -->
+            <button class="calc-btn" data-cell="5/1" onclick="calcInsert('0')">0</button>
+            <button class="calc-btn" data-cell="5/2" onclick="calcInsert('00')">00</button>
+            <button class="calc-btn" data-cell="5/3" onclick="calcInsert('.')">,</button>
+            <button class="calc-btn op" data-cell="5/4" onclick="calcInsert('+')">+</button>
         </div>
 
         <div class="calc-history" id="calcHistory"></div>
@@ -1876,7 +1916,7 @@
             <div class="flex items-center gap-2">
                 <i class="fas fa-wallet text-indigo-500 text-xl"></i>
                 <span class="text-lg font-black bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent tracking-tighter">Finwise</span>
-                <span class="ml-2 px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-full text-[10px] font-black italic" id="versionLabel">v4.6</span>
+                <span class="ml-2 px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-full text-[10px] font-black italic" id="versionLabel">v4.8</span>
             </div>
             <div class="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-700"></div>
             <div class="flex items-center gap-2 text-sm text-slate-400 font-bold">
@@ -1886,7 +1926,7 @@
     </div>
 
     <script>
-        const CURRENT_VERSION = "4.6";
+        const CURRENT_VERSION = "4.8";
         let transactions = JSON.parse(localStorage.getItem('finwise_db')) || [];
         let goals = JSON.parse(localStorage.getItem('finwise_goals')) || [];
 
@@ -2994,7 +3034,6 @@
             const dueTodayTotal = dueToday.reduce((s, t) => s + t.amount, 0);
 
             const cards = [
-                // ===== CARD: MÊS ANTERIOR =====
                 { id: 'prev_month', className: 'col-span-full border-l-4 border-l-purple-500', content: `
                     <div class="flex justify-between items-center mb-3">
                         <div class="flex items-center gap-2">
@@ -3018,8 +3057,6 @@
                         </div>
                     </div>
                 `},
-
-                // ===== CARD SALDO REMANESCENTE GLOBAL =====
                 { id: 'saldo_global', className: 'col-span-full lg:col-span-2 border-l-4 border-l-emerald-400', content: `
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest">💰 Saldo Remanescente</span>
@@ -3094,7 +3131,6 @@
                     </div>
                     ${dueTodayCount > 0 ? `<p class="text-[8px] text-amber-500/70 mt-1">⏰ ${dueTodayCount} conta(s) vencem hoje!</p>` : '<p class="text-[8px] text-slate-500/70 mt-1">Nenhuma conta vence hoje</p>'}
                 `},
-                // ===== CARD: COMPARAÇÃO MÊS ATUAL vs MÊS ANTERIOR =====
                 { id: 'compare_months', className: 'col-span-full lg:col-span-2 border-l-4 border-l-indigo-500', content: `
                     <div class="flex justify-between items-center mb-3">
                         <div class="flex items-center gap-2">
@@ -3107,8 +3143,6 @@
                         <canvas id="compareMonthsChart"></canvas>
                     </div>
                 `},
-
-                // ===== CARD: SALDO ACUMULADO DO ANO =====
                 { id: 'accumulated_year', className: 'col-span-full lg:col-span-2 border-l-4 border-l-cyan-500', content: `
                     <div class="flex justify-between items-center mb-3">
                         <div class="flex items-center gap-2">
@@ -3121,13 +3155,10 @@
                         <canvas id="accumulatedYearChart"></canvas>
                     </div>
                 `},
-
-                // ===== CARD: MOVIMENTAÇÕES RECENTES =====
                 { id: 'recent', className: 'col-span-full', content: `
                     <p class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-4">Movimentações Recentes</p>
                     <div id="latestActivity" class="space-y-3 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar"></div>
                 `},
-
                 { id: 'donut', className: 'col-span-full lg:col-span-2 lg:row-span-2', content: `
                     <h3 class="text-slate-500 text-[9px] font-extrabold uppercase tracking-widest mb-4">Gastos por Categoria (Mês)</h3>
                     <div class="flex flex-col md:flex-row items-center gap-6">
@@ -3176,7 +3207,6 @@
             renderAccumulatedYearChart(month);
         }
 
-        // ============ GRÁFICO: COMPARAÇÃO MÊS ATUAL vs ANTERIOR ============
         function renderCompareMonthsChart(month, prevKey, monthNames) {
             const canvas = document.getElementById('compareMonthsChart');
             if (!canvas) return;
@@ -3259,7 +3289,6 @@
             });
         }
 
-        // ============ GRÁFICO: SALDO ACUMULADO DO ANO ============
         function renderAccumulatedYearChart(month) {
             const canvas = document.getElementById('accumulatedYearChart');
             if (!canvas) return;
@@ -3342,7 +3371,6 @@
             });
         }
 
-        // ============ RENDER ANÁLISES ============
         function renderAnalisesInsideDashboard(filtered) {
             const expenses = filtered.filter(t => categoryMeta[t.category] && categoryMeta[t.category].type === 'expense');
             const totalExp = expenses.reduce((s, t) => s + t.amount, 0);
@@ -3385,7 +3413,6 @@
             }).join('');
         }
 
-        // ============ RENDER LANÇAMENTOS ============
         function renderLancamentos() {
             const filtered = getFilteredTransactions();
             const todayStr = new Date().toISOString().slice(0, 10);
@@ -3433,7 +3460,6 @@
             }).join('');
         }
 
-        // ============ COMPARAÇÃO - ÚLTIMOS 4 MESES ============
         function renderComparison() {
             const currentMonth = filterMonth.value;
             if (!currentMonth) return;
@@ -3569,7 +3595,6 @@
             });
         }
 
-        // ============ RELATÓRIOS - ANÁLISE DO CONTADOR ============
         function renderReportsImproved() {
             const grid = document.getElementById('reportsGrid');
             grid.innerHTML = '';
@@ -3796,7 +3821,6 @@
             grid.appendChild(summaryCard);
         }
 
-        // ============ NOTIFICATIONS ============
         function checkNotifications() {
             const today = new Date();
             const todayStr = today.toISOString().slice(0, 10);
@@ -3841,7 +3865,6 @@
             });
         }
 
-        // ============ TABS ============
         function showTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             const target = document.getElementById(`${tab}Tab`);
@@ -3885,7 +3908,6 @@
             populateTagFilter();
         }
 
-        // ============ FORM SUBMIT ============
         document.getElementById('financeForm').onsubmit = (e) => {
             e.preventDefault();
             const amt = parseAmount(document.getElementById('amount').value);
@@ -3954,7 +3976,6 @@
             document.getElementById('parcelasDiv').classList.toggle('hidden', e.target.value !== 'parcelado');
         };
 
-        // ============ INPUT MASK ============
         [amountInput, goalAmountInput, fundAmountInput].forEach(input => {
             if (input) {
                 input.addEventListener('input', (e) => {
@@ -3966,7 +3987,6 @@
             }
         });
 
-        // ============ POPULATE FILTERS ============
         function populateFilters() {
             const select = document.getElementById('categoryFilter');
             if (select) {
@@ -3979,12 +3999,14 @@
         }
 
         // ================================================================
-        // ============ CALCULADORA FLUTUANTE (CORRIGIDA) =================
+        // ============ CALCULADORA FLUTUANTE =============================
         // ================================================================
         let calcExpression = '';
         let calcHistory = JSON.parse(localStorage.getItem('finwise_calc_history')) || [];
         let calcOpen = false;
         let calcJustEvaluated = false;
+        let calcACArmed = false;
+        let calcACTimeout = null;
 
         function toggleCalculator() {
             calcOpen = !calcOpen;
@@ -4034,45 +4056,109 @@
             updateCalcPreview();
         }
 
-        // Exibe a expressão trocando * e / pelos símbolos visuais
         function formatExpressionDisplay(expr) {
             if (!expr) return '';
             return expr.replace(/\*/g, '×').replace(/\//g, '÷');
         }
 
+        function calcClear() {
+            if (calcACArmed) {
+                clearTimeout(calcACTimeout);
+                calcACArmed = false;
+                calcExpression = '';
+                calcJustEvaluated = false;
+                document.getElementById('calcExpression').textContent = '';
+                const resultEl = document.getElementById('calcResult');
+                resultEl.textContent = '0';
+                resultEl.className = 'calc-result preview';
+                const acBtn = document.querySelector('.calc-btn.clear-all');
+                if (acBtn) acBtn.textContent = 'AC';
+                return;
+            }
+
+            if (!calcExpression) {
+                calcExpression = '';
+                calcJustEvaluated = false;
+                document.getElementById('calcExpression').textContent = '';
+                const resultEl = document.getElementById('calcResult');
+                resultEl.textContent = '0';
+                resultEl.className = 'calc-result preview';
+                return;
+            }
+
+            calcExpression = '';
+            calcJustEvaluated = false;
+            document.getElementById('calcExpression').textContent = '';
+            updateCalcPreview();
+
+            calcACArmed = true;
+            const btn = document.querySelector('.calc-btn.clear-all');
+            if (btn) btn.textContent = 'C';
+            clearTimeout(calcACTimeout);
+            calcACTimeout = setTimeout(() => {
+                calcACArmed = false;
+                if (btn) btn.textContent = 'AC';
+            }, 1500);
+        }
+
+        function resolvePercent(expr) {
+            const pctRegex = /(\d+(?:\.\d+)?)\s*([+\-×÷\*\/])\s*(\d+(?:\.\d+)?)%\s*$/;
+            const match = expr.match(pctRegex);
+            if (match) {
+                const base = parseFloat(match[1]);
+                const op = match[2];
+                const pct = parseFloat(match[3]);
+                let pctValue;
+                if (op === '+' || op === '-') {
+                    pctValue = base * (pct / 100);
+                } else {
+                    pctValue = pct / 100;
+                }
+                const before = expr.slice(0, match.index);
+                return before + `${base}${op}${pctValue}`;
+            }
+
+            const soloRegex = /(\d+(?:\.\d+)?)%\s*$/;
+            const soloMatch = expr.match(soloRegex);
+            if (soloMatch) {
+                const num = parseFloat(soloMatch[1]);
+                const before = expr.slice(0, soloMatch.index);
+                return before + (num / 100);
+            }
+
+            return expr;
+        }
+
         function calcInsert(value) {
-            // Se o último cálculo foi avaliado e o usuário digita um número,
-            // começamos uma nova expressão. Se digita um operador, continuamos.
             if (calcJustEvaluated) {
                 const isOperator = ['+', '-', '×', '÷', '*', '/'].includes(value);
                 if (isOperator) {
-                    // Continua a partir do resultado
                     calcExpression = calcExpression + value;
                 } else {
-                    // Começa nova expressão
                     calcExpression = value;
                 }
                 calcJustEvaluated = false;
             } else {
-                calcExpression += value;
+                const lastChar = calcExpression.slice(-1);
+                const operators = ['+', '-', '×', '÷'];
+                if (operators.includes(value) && operators.includes(lastChar)) {
+                    calcExpression = calcExpression.slice(0, -1) + value;
+                } else {
+                    calcExpression += value;
+                }
             }
             document.getElementById('calcExpression').textContent = formatExpressionDisplay(calcExpression);
             updateCalcPreview();
         }
 
-        function calcClear() {
-            calcExpression = '';
-            calcJustEvaluated = false;
-            document.getElementById('calcExpression').textContent = '';
-            const resultEl = document.getElementById('calcResult');
-            resultEl.textContent = '0';
-            resultEl.className = 'calc-result preview';
-        }
-
         function calcBackspace() {
             if (calcJustEvaluated) {
-                // Se acabou de avaliar, backspace limpa tudo
-                calcClear();
+                calcExpression = '';
+                calcJustEvaluated = false;
+                document.getElementById('calcExpression').textContent = '';
+                const resultEl = document.getElementById('calcResult');
+                resultEl.textContent = '0';
+                resultEl.className = 'calc-result preview';
                 return;
             }
             calcExpression = calcExpression.slice(0, -1);
@@ -4109,11 +4195,12 @@
         }
 
         function evaluateExpression(expr) {
-            const normalized = normalizeExpression(expr);
+            const resolved = resolvePercent(expr);
+            const normalized = normalizeExpression(resolved);
             if (!/^[0-9+\-*/().\s]+$/.test(normalized)) {
                 throw new Error('Caracteres inválidos');
             }
-            if (!validateParens(expr)) {
+            if (!validateParens(resolved)) {
                 throw new Error('Parênteses desbalanceados');
             }
             const fn = new Function('return (' + normalized + ')');
@@ -4124,21 +4211,12 @@
             return result;
         }
 
-        // Converte um number JS (ex: 1234.56) para string BR (ex: "1.234,56")
         function numberToBR(num) {
             if (typeof num !== 'number' || !isFinite(num)) return '0';
             const rounded = parseFloat(num.toFixed(6));
             const [intPart, decPart] = rounded.toString().split('.');
             const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             return decPart ? `${intFormatted},${decPart}` : intFormatted;
-        }
-
-        // Formata uma string numérica (com ponto decimal) para exibição BR
-        function formatNumberBR(numStr) {
-            if (numStr === '' || numStr === null || numStr === undefined) return '0';
-            const num = parseFloat(numStr);
-            if (isNaN(num)) return numStr;
-            return numberToBR(num);
         }
 
         function updateCalcPreview() {
@@ -4168,7 +4246,6 @@
                 const numResult = parseFloat(result.toFixed(6));
                 const display = numberToBR(numResult);
 
-                // Guarda no histórico
                 calcHistory.unshift({
                     expr: formatExpressionDisplay(calcExpression),
                     result: display,
@@ -4177,18 +4254,17 @@
                 saveCalcHistory();
                 renderCalcHistory();
 
-                // Atualiza display
                 resultEl.textContent = display;
                 resultEl.className = 'calc-result success';
                 document.getElementById('calcExpression').textContent = formatExpressionDisplay(calcExpression) + ' =';
 
-                // Guarda o valor cru (com ponto decimal) para continuar calculando
                 calcExpression = numResult.toString();
                 calcJustEvaluated = true;
 
-                // Atualiza a expressão mostrada para exibir apenas o resultado
-                // (usa requestAnimationFrame, que roda imediatamente após o paint atual,
-                // sem risco de sobrescrever digitação posterior do usuário)
+                calcACArmed = false;
+                const acBtn = document.querySelector('.calc-btn.clear-all');
+                if (acBtn) acBtn.textContent = 'AC';
+
                 requestAnimationFrame(() => {
                     document.getElementById('calcExpression').textContent = display;
                 });
@@ -4211,6 +4287,7 @@
             else if (key === '*') { calcInsert('×'); e.preventDefault(); }
             else if (key === '/') { calcInsert('÷'); e.preventDefault(); }
             else if (key === '(' || key === ')') { calcInsert(key); e.preventDefault(); }
+            else if (key === '%') { calcInsert('%'); e.preventDefault(); }
             else if (key === 'Enter' || key === '=') { calcEquals(); e.preventDefault(); }
             else if (key === 'Backspace') { calcBackspace(); e.preventDefault(); }
             else if (key === 'Escape') { toggleCalculator(); e.preventDefault(); }
